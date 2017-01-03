@@ -1,0 +1,9 @@
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\bin\Debug\TestDB2.exe.config
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\bin\Debug\TestDB2.exe
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\bin\Debug\TestDB2.pdb
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.csprojResolveAssemblyReference.cache
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.Form1.resources
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.Properties.Resources.resources
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.csproj.GenerateResource.Cache
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.exe
+c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.pdb
