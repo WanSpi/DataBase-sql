@@ -7,3 +7,5 @@ c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Deb
 c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.csproj.GenerateResource.Cache
 c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.exe
 c:\users\akirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.pdb
+C:\Users\AKirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.CreateTableForm.resources
+C:\Users\AKirushyn\documents\visual studio 2013\Projects\TestDB2\TestDB2\obj\Debug\TestDB2.CreateDataBaseForm.resources

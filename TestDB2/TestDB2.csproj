@@ -44,6 +44,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreateDataBaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CreateDataBaseForm.Designer.cs">
+      <DependentUpon>CreateDataBaseForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CreateTableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CreateTableForm.Designer.cs">
+      <DependentUpon>CreateTableForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DataBase.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -53,6 +65,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="CreateDataBaseForm.resx">
+      <DependentUpon>CreateDataBaseForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CreateTableForm.resx">
+      <DependentUpon>CreateTableForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

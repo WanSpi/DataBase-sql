@@ -14,8 +14,9 @@ namespace TestDB2 {
             InitializeComponent();
         }
 
-        private void DataBaseTree_Reload() {
+        public void DataBaseTree_Reload() {
             string[] tables, dbs = DataBase.GetDataBases();
+            DataBaseTree.Nodes.Clear();
             TreeNode tn;
 
             for (int i = 0; i != dbs.Length; i++) {
@@ -32,6 +33,7 @@ namespace TestDB2 {
 
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
+
         }
 
         private void DataBaseTree_MouseDoubleClick(object sender, MouseEventArgs e) {
@@ -55,6 +57,12 @@ namespace TestDB2 {
                     }
                 }
             }
+        }
+
+        private void buttonAddDataBase_Click(object sender, EventArgs e) {
+            CreateDataBaseForm f = new CreateDataBaseForm();
+            f.Owner = this;
+            f.Show();
         }
     }
 }

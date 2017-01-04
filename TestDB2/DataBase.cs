@@ -109,6 +109,47 @@ namespace TestDB2 {
             return true;
         }
 
+        static private int getBits(Column col) {
+            switch (col.getType()) {
+                case 0: // int
+                    return col.getLength();
+                case 1: // float
+                    return col.getLength() + 8;
+                case 2: // char
+                    return 8;
+                case 3: // varchar
+                    return col.getLength() * 8;
+                case 4: // boolean
+                    return 1;
+                case 5: // text
+                    return 24;
+                case 6: // date
+                    return 33; // (yyyy-mm-dd) (24, 4, 5)
+                case 7: // time
+                    return 11; // (hh:mm) (5, 6)
+                case 8: // datetime
+                    return 44;
+                default:
+                    return 0;
+            }
+        }
+
+        static private char[] rowEncode(string[] values, Column[] cols) {
+            int bits = 0;
+            for (int i = 0; i != cols.Length; i++) {
+                bits += getBits(cols[i]);
+            }
+
+            char[] data = new char[(int)Math.Ceiling(bits / 8F)];
+
+
+
+            return data;
+        }
+        static private void rowDecode() {
+
+        }
+
         static public Column[] GetColumns(string table) {
             if (!DataBase.ExistTables(table)) {
                 return null;
