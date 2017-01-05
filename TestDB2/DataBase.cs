@@ -134,7 +134,7 @@ namespace TestDB2 {
             }
         }
 
-        static private char[] rowEncode(string[] values, Column[] cols) {
+        static public char[] rowEncode(string[] values, Column[] cols) {
             int bits = 0;
             for (int i = 0; i != cols.Length; i++) {
                 bits += getBits(cols[i]);
@@ -142,7 +142,28 @@ namespace TestDB2 {
 
             char[] data = new char[(int)Math.Ceiling(bits / 8F)];
 
+            int bufInt;
+            string stringBuf, stringData = "";
+            for (int i = 0; i != values.Length; i++) {
+                stringBuf = "";
+                bits = getBits(cols[i]);
 
+                switch (cols[i].getType()) {
+                    case 0: // int
+                    case 5: // text
+                        bufInt = Convert.ToInt32(values[i]);
+                        for (int j = 0; j != bits; j++) {
+                            stringBuf = (bufInt & 1).ToString() + stringBuf;
+                            bufInt >>= 1;
+                        }
+                        break;
+                    case 4: // bolean
+                        stringBuf = values[i];
+                        break;
+                }
+                Console.WriteLine(stringBuf);
+                stringData += stringBuf;
+            }
 
             return data;
         }

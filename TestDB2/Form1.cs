@@ -34,6 +34,7 @@ namespace TestDB2 {
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
 
+            DataBase.rowEncode(new string[] { "12" }, new Column[] { new Column("a", ColumnType.INT, 3) });
         }
 
         private void DataBaseTree_MouseDoubleClick(object sender, MouseEventArgs e) {
