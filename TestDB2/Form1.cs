@@ -34,7 +34,18 @@ namespace TestDB2 {
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
 
-            DataBase.rowEncode(new string[] { "12" }, new Column[] { new Column("a", ColumnType.INT, 3) });
+            DataBase.Use("mydb");
+            DataBase.Select("new2");
+            RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a'))");
+            /*
+            DataBase.Insert(
+                "new2", new string[] { 
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                }
+            );*/
         }
 
         private void DataBaseTree_MouseDoubleClick(object sender, MouseEventArgs e) {
@@ -53,7 +64,6 @@ namespace TestDB2 {
                     grid.Dock = System.Windows.Forms.DockStyle.Fill;
                     tp.Controls.Add(grid);
                     for (int i = 0; i != cols.Length; i++) {
-
                         grid.Columns.Add(i.ToString(), cols[i].getName());
                     }
                 }

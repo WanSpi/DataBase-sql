@@ -41,6 +41,51 @@ namespace TestDB2 {
             return l;
         }
     }
+    class RequestLimit {
+        private int row;
+        private int offset;
+
+        public RequestLimit(int n1, int n2 = 0) { // [offset,] rows
+            if (n2 == 0) {
+                this.offset = 0;
+                this.row = n1;
+            } else {
+                this.offset = n1;
+                this.row = n2;
+            }
+        }
+    }
+    class RequestOrder {
+        int type;
+        string col;
+
+        public RequestOrder(string column, string type = "ASC") {
+            this.col = column;
+            this.type = type == "ASC" ? 1 : 0;
+        }
+    }
+    class RequestWhere {
+        /*
+         * ()
+         * OR AND
+         * = <= >= < > != 
+         * IN BETWEEN
+         */
+        public RequestWhere(string where) {
+            int count = 1;
+            for (int i = 0; i != where.Length; i++) {
+                if (where[i] == '(') {
+                    count++;
+                }
+            }
+            
+            string[] whereAll = new string[count];
+
+            for (int i = 0; i != whereAll.Length; i++) {
+                Console.WriteLine(whereAll[i]);
+            }
+        }
+    }
     static class DataBase {
         static private string db = null;
 
@@ -133,8 +178,26 @@ namespace TestDB2 {
                     return 0;
             }
         }
+        static public bool Insert(string table, string[] values, Column[] cols = null) {
+            if (cols == null) {
+                cols = DataBase.GetColumns(table);
+            }
 
-        static public char[] rowEncode(string[] values, Column[] cols) {
+            if (values.Length != cols.Length) {
+                return false;
+            } else if (!DataBase.ExistTables(table)) {
+                return false; // DataBase is not found
+            }
+
+            StreamWriter sw = new StreamWriter("DataBase\\" + db + "\\" + table + ".table", true);
+            sw.WriteLine(
+                DataBase.rowEncode(values, cols)
+            );
+
+            sw.Close();
+            return true;
+        }
+        static private char[] rowEncode(string[] values, Column[] cols) {
             int bits = 0;
             for (int i = 0; i != cols.Length; i++) {
                 bits += getBits(cols[i]);
@@ -161,23 +224,82 @@ namespace TestDB2 {
                         stringBuf = values[i];
                         break;
                 }
-                Console.WriteLine(stringBuf);
+
                 stringData += stringBuf;
+            }
+
+            while (stringData.Length % 8 != 0) {
+                stringData += "0";
+            }
+
+            int bitNum = 0, byteNum = 0;
+            for (int i = 0; i != stringData.Length; i++) {
+                if (stringData[i] == '1') {
+                    data[byteNum]++;
+                }
+                bitNum++;
+
+                if (bitNum == 8) {
+                    bitNum = 0;
+                    byteNum++;
+                } else {
+                    data[byteNum] <<= 1;
+                }
+            } 
+
+            return data;
+        }
+        static private string bitsToString(string data, Column col) {
+            switch (col.getType()) {
+                case 0: // int
+                case 5: // text
+                    int num = 0;
+
+                    for (int i = 0; i != data.Length; i++) {
+                        num <<= 1;
+                        if (data[i] == '1') {
+                            num = num | 1;
+                        }
+                    }
+
+                    data = num.ToString();
+                    break;
             }
 
             return data;
         }
-        static private void rowDecode() {
+        static private void rowDecode(string row, Column[] cols) {
+            string[] data = new string[cols.Length];
 
+            string rowBit = ""; char al;
+            for (int i = 0; i != row.Length; i++) {
+                al = row[i];
+                for (int j = 0; j != 8; j++) {
+                    rowBit += ((int)(al & 128) == 128 ? '1' : '0');
+                    al <<= 1;
+                }
+            }
+
+            int bits = 0, colBits;
+            for (int i = 0; i != cols.Length; i++) {
+                colBits = DataBase.getBits(cols[i]);
+
+                data[i] = DataBase.bitsToString(
+                    rowBit.Substring(bits, colBits),
+                    cols[i]
+                );
+                bits += colBits;
+            }
         }
 
-        static public Column[] GetColumns(string table) {
+        static private StreamReader sr = null;
+        static private Column[] getColumns(string table) {
             if (!DataBase.ExistTables(table)) {
                 return null;
             }
 
-            StreamReader sr = new StreamReader("DataBase\\" + db + "\\" + table + ".table");
-            string b = sr.ReadLine();
+            DataBase.sr = new StreamReader("DataBase\\" + db + "\\" + table + ".table");
+            string b = DataBase.sr.ReadLine();
             string[] sb = b.Split(new char[] { ':' });
 
             if (sb[0] == "1") {
@@ -185,7 +307,7 @@ namespace TestDB2 {
                 Column[] cols = new Column[count];
 
                 for (int i = 0; i != cols.Length; i++) {
-                    sb = sr.ReadLine().Split(new char[] { ':' });
+                    sb = DataBase.sr.ReadLine().Split(new char[] { ':' });
                     cols[i] = new Column(sb[0], Convert.ToInt32(sb[1]), Convert.ToInt32(sb[2]), sb[3]);
                 }
 
@@ -193,6 +315,23 @@ namespace TestDB2 {
             } else {
                 return null;
             }
+        }
+        static public string[] Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+            Column[] cols = DataBase.getColumns(table);
+
+            while(!DataBase.sr.EndOfStream) {
+                DataBase.rowDecode(DataBase.sr.ReadLine(), cols);
+            }
+
+            DataBase.sr.Close();
+            string[] data = new string[0];
+            return data;
+        }
+        static public Column[] GetColumns(string table) {
+            Column[] data = DataBase.getColumns(table);
+            DataBase.sr.Close();
+
+            return data;
         }
     }
 }
