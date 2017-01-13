@@ -36,7 +36,8 @@ namespace TestDB2 {
 
             DataBase.Use("mydb");
             DataBase.Select("new2");
-            RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a'))");
+            // Console.WriteLine(Convert.ToInt32("$12".Substring(1)));
+            RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a') AND (a > 'a'))");
             /*
             DataBase.Insert(
                 "new2", new string[] { 

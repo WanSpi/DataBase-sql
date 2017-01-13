@@ -65,12 +65,95 @@ namespace TestDB2 {
         }
     }
     class RequestWhere {
+        class WhereLevelOne {
+            string name;
+            string value;
+            int oper;
+            /*
+             *  0 =
+             *  1 !=
+             *  2 <
+             *  3 >
+             *  4 <=
+             *  5 >=
+             */ 
+            public WhereLevelOne(string str) {
+                str = str.Trim();
+                if (str[0] == '$') {
+                    this.name = "";
+                    this.oper = Convert.ToInt32(str.Substring(1));
+                } else {
+                    for (int i = 0; i != str.Length; i++) {
+                        switch (str[i]) {
+                            case '=':
+                            case '!':
+                            case '<':
+                            case '>':
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        class WhereLevel {
+            private WhereLevelOne[] levelsOne;
+            private int[] oper;
+
+            public WhereLevel(string level) {
+                Console.WriteLine("--------");
+                Console.WriteLine(level);
+                Console.WriteLine("--------");
+
+                int count = 1;
+                for (int i = 0; i <= level.Length - 5; i++) {
+                    if (level.Substring(i, 4) == " OR ") {
+                        i += 3;
+                        count++;
+                    } else if (level.Substring(i, 5) == " AND ") {
+                        i += 4;
+                        count++;
+                    }
+                }
+
+                this.oper = new int[count - 1];
+                this.levelsOne = new WhereLevelOne[count];
+                int bi = 0, o = 0;
+                for (int i = 0; i <= level.Length - 5; i++) {
+                    if (level.Substring(i, 4) == " OR ") {
+                        this.oper[o] = 0;
+                        this.levelsOne[o++] = new WhereLevelOne(level.Substring(bi, i - bi));
+                        i += 4;
+                        bi = i;
+                    } else if (level.Substring(i, 5) == " AND ") {
+                        this.oper[o] = 1;
+                        this.levelsOne[o++] = new WhereLevelOne(level.Substring(bi, i - bi));
+                        i += 5;
+                        bi = i;
+                    }
+                }
+                this.levelsOne[o] = new WhereLevelOne(level.Substring(bi, level.Length - bi));
+            }
+        }
         /*
          * ()
          * OR AND
-         * = <= >= < > != 
+         * (
+         *  0 =
+         *  1 !=
+         *  2 <
+         *  3 >
+         *  4 <=
+         *  5 >=
+         * )
          * IN BETWEEN
          */
+        public bool CheckParse() {
+            return true;
+        }
+        public void Parse() {
+        }
+
+        private WhereLevel[] levels;
         public RequestWhere(string where) {
             int count = 1;
             for (int i = 0; i != where.Length; i++) {
@@ -80,9 +163,25 @@ namespace TestDB2 {
             }
             
             string[] whereAll = new string[count];
+            int[] r = new int[count];
+            int kr = 0, len = 1;
 
-            for (int i = 0; i != whereAll.Length; i++) {
-                Console.WriteLine(whereAll[i]);
+            whereAll[0] = "";
+            r[0] = 0;
+            for (int i = 0; i != where.Length; i++) {
+                if (where[i] == '(') {
+                    r[++kr] = len++;
+                    whereAll[r[kr]] = "";
+                } else if (where[i] == ')') {
+                    whereAll[r[--kr]] += '$' + r[kr + 1].ToString();
+                } else {
+                    whereAll[r[kr]] += where[i];
+                }
+            }
+
+            this.levels = new WhereLevel[len];
+            for (int i = 0; i != len; i++) {
+                this.levels[i] = new WhereLevel(whereAll[i]);
             }
         }
     }
