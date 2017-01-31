@@ -35,15 +35,26 @@ namespace TestDB2 {
             DataBaseTree_Reload();
 
             DataBase.Use("mydb");
-            DataBase.Select("new2");
+            List<string[]> strs = DataBase.Select(
+                "new2",
+                new RequestWhere("id = 2 OR id = 1"),
+                new RequestOrder("id", "DESC"),
+                new RequestLimit(1, 1)
+            );
+            for (int i = 0; i != strs.Count; i++) {
+                for (int j = 0; j != strs[i].Length; j++) {
+                    Console.Write(strs[i][j] + " ");
+                }
+                Console.WriteLine();
+            }
             // Console.WriteLine(Convert.ToInt32("$12".Substring(1)));
-            RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a') AND (a > 'a'))");
+            //RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a') AND (a > 'a'))");
             /*
             DataBase.Insert(
                 "new2", new string[] { 
-                    "1",
                     "2",
                     "3",
+                    "4",
                     "4"
                 }
             );*/
@@ -66,6 +77,16 @@ namespace TestDB2 {
                     tp.Controls.Add(grid);
                     for (int i = 0; i != cols.Length; i++) {
                         grid.Columns.Add(i.ToString(), cols[i].getName());
+                    }
+
+                    List<string[]> list = DataBase.Select(tn.Text);
+                    if (list.Count != 0) {
+                        for (int i = 0; i != list.Count; i++) {
+                            grid.Rows.Add();
+                            for (int j = 0; j != list[i].Length; j++) {
+                                grid[j, i].Value = list[i][j];
+                            }
+                        }
                     }
                 }
             }

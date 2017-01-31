@@ -42,23 +42,92 @@ namespace TestDB2 {
         }
     }
     class RequestLimit {
-        private int row;
+        private int rows;
         private int offset;
 
-        public RequestLimit(int n1, int n2 = 0) { // [offset,] rows
-            if (n2 == 0) {
-                this.offset = 0;
-                this.row = n1;
-            } else {
-                this.offset = n1;
-                this.row = n2;
+        public void Limit(List<string[]> data) {
+            if (this.offset != 0) {
+                int offset = this.offset;
+                while (offset != 0) {
+                    data.RemoveAt(0);
+                    offset--;
+                    if (data.Count == 0) {
+                        return;
+                    }
+                }
             }
+            if (this.rows < data.Count) {
+                while (this.rows != data.Count) {
+                    data.RemoveAt(data.Count - 1);
+                }
+            }
+        }
+        public RequestLimit(int rows) {
+            this.offset = 0;
+            this.rows = rows;
+        }
+        public RequestLimit(int offset, int rows) {
+            this.offset = offset;
+            this.rows = rows;
         }
     }
     class RequestOrder {
         int type;
         string col;
 
+        private bool checkMax(string v1, string v2, int type) {
+            switch (type) {
+                case 0: // int
+                    return Convert.ToInt32(v1) > Convert.ToInt32(v2);
+                case 2: // char
+                    return (int)v1[0] > (int)v2[0];
+                /*case 1: // float
+                    return col.getLength() + 8;
+                case 3: // varchar
+                    return col.getLength() * 8;
+                case 4: // boolean
+                    return 1;
+                case 5: // text
+                    return 24;
+                case 6: // date
+                    return 33; // (yyyy-mm-dd) (24, 4, 5)
+                case 7: // time
+                    return 11; // (hh:mm) (5, 6)
+                case 8: // datetime
+                    return 44;*/
+                default:
+                    return false;
+            }
+        }
+        public void Sort(List<string[]> data, Column[] cols) {
+            int colNum = -1, colType = 0;
+            int i;
+            for (i = 0; i != cols.Length; i++) {
+                if (cols[i].getName() == this.col) {
+                    colNum = i;
+                    colType = cols[i].getType();
+                    break;
+                }
+            }
+            if (colNum == -1) {
+                return;
+            }
+
+            bool ret = false, max;
+            string[] buf;
+            while(!ret) {
+                ret = true;
+                for (i = 0; i != data.Count - 1; i++) {
+                    max = checkMax(data[i][colNum], data[i + 1][colNum], colType);
+                    if ((this.type == 1 && max) || (this.type == 0 && !max)) {
+                        buf = data[i + 1];
+                        data[i + 1] = data[i];
+                        data[i] = buf;
+                        ret = false;
+                    }
+                }
+            }
+        }
         public RequestOrder(string column, string type = "ASC") {
             this.col = column;
             this.type = type == "ASC" ? 1 : 0;
@@ -66,9 +135,9 @@ namespace TestDB2 {
     }
     class RequestWhere {
         class WhereLevelOne {
-            string name;
-            string value;
-            int oper;
+            string name1;
+            string name2;
+            int oper = -1;
             /*
              *  0 =
              *  1 !=
@@ -76,20 +145,66 @@ namespace TestDB2 {
              *  3 >
              *  4 <=
              *  5 >=
-             */ 
+             */
+            private string getValue(string value, bool[] levels, string[] row, Column[] cols) {
+                if (value[0] >= '0' && value[0] <= '9') {
+                    return value;
+                } else if (value[0] == '\'') {
+                    return value.Substring(1, value.Length - 2);
+                } else {
+                    for (int i = 0; i != cols.Length; i++) {
+                        if (cols[i].getName() == value) {
+                            return row[i];
+                        }
+                    }
+                }
+
+                return "";
+            }
+            public bool Parse(bool[] levels, string[] row, Column[] cols) {
+                if (this.name1 == "") {
+                    return levels[this.oper];
+                } else {
+                    string n1 = getValue(this.name1, levels, row, cols),
+                           n2 = getValue(this.name2, levels, row, cols);
+
+                    switch (this.oper) {
+                        case 0: return (n1 == n2);
+                        case 1: return (n1 != n2);
+                        case 2: return (Convert.ToInt32(n1) < Convert.ToInt32(n2));
+                        case 3: return (Convert.ToInt32(n1) > Convert.ToInt32(n2));
+                        case 4: return (Convert.ToInt32(n1) <= Convert.ToInt32(n2));
+                        case 5: return (Convert.ToInt32(n1) >= Convert.ToInt32(n2));
+                    }
+
+                    return false;
+                }
+            }
             public WhereLevelOne(string str) {
                 str = str.Trim();
                 if (str[0] == '$') {
-                    this.name = "";
+                    this.name1 = "";
                     this.oper = Convert.ToInt32(str.Substring(1));
                 } else {
                     for (int i = 0; i != str.Length; i++) {
                         switch (str[i]) {
-                            case '=':
-                            case '!':
-                            case '<':
-                            case '>':
-                                break;
+                            case '=': this.oper = 0; break;
+                            case '!': this.oper = 1; break;
+                            case '<': this.oper = 2; break;
+                            case '>': this.oper = 3; break;
+                        }
+                        if (this.oper != -1) {
+                            this.name1 = str.Substring(0, i - 1).Trim();
+                            if (str[i + 1] == '=') {
+                                this.name2 = str.Substring(i + 2).Trim();
+                                switch (this.oper) {
+                                    case 2: this.oper = 4; break;
+                                    case 3: this.oper = 5; break;
+                                }
+                            } else {
+                                this.name2 = str.Substring(i + 1).Trim();
+                            }
+                            break;
                         }
                     }
                 }
@@ -99,11 +214,34 @@ namespace TestDB2 {
             private WhereLevelOne[] levelsOne;
             private int[] oper;
 
-            public WhereLevel(string level) {
-                Console.WriteLine("--------");
-                Console.WriteLine(level);
-                Console.WriteLine("--------");
+            public bool Parse(bool[] levels, string[] row, Column[] cols) {
+                bool[] levelsOneValid = new bool[levelsOne.Length];
+                bool valid = true;
+                for (int i = 0; i != levelsOne.Length; i++) {
+                    if (!valid) {
+                        if (this.oper[i - 1] == 1) {
+                            continue;
+                        } else {
+                            valid = true;
+                        }
+                    }
+                    
+                    levelsOneValid[i] = levelsOne[i].Parse(levels, row, cols);
+                    if (!levelsOneValid[i]) {
+                        valid = false;
+                    }
+                    if (valid) {
+                        if (levelsOne.Length == i + 1) {
+                            return true;
+                        } else if (this.oper[i] == 0) {
+                            return true;
+                        }
+                    }
+                }
 
+                return false;
+            }
+            public WhereLevel(string level) {
                 int count = 1;
                 for (int i = 0; i <= level.Length - 5; i++) {
                     if (level.Substring(i, 4) == " OR ") {
@@ -147,10 +285,14 @@ namespace TestDB2 {
          * )
          * IN BETWEEN
          */
-        public bool CheckParse() {
-            return true;
-        }
-        public void Parse() {
+        public bool Parse(string[] row, Column[] cols) {
+            bool[] levelValid = new bool[levels.Length];
+
+            for (int i = levels.Length - 1; i >= 0; i--) {
+                levelValid[i] = levels[i].Parse(levelValid, row, cols);
+            }
+
+            return levelValid[0];
         }
 
         private WhereLevel[] levels;
@@ -367,7 +509,7 @@ namespace TestDB2 {
 
             return data;
         }
-        static private void rowDecode(string row, Column[] cols) {
+        static private string[] rowDecode(string row, Column[] cols) {
             string[] data = new string[cols.Length];
 
             string rowBit = ""; char al;
@@ -389,6 +531,8 @@ namespace TestDB2 {
                 );
                 bits += colBits;
             }
+
+            return data;
         }
 
         static private StreamReader sr = null;
@@ -415,15 +559,29 @@ namespace TestDB2 {
                 return null;
             }
         }
-        static public string[] Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+        static public List<string[]> Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             Column[] cols = DataBase.getColumns(table);
+            List<string[]> data = new List<string[]>();
 
             while(!DataBase.sr.EndOfStream) {
-                DataBase.rowDecode(DataBase.sr.ReadLine(), cols);
+                data.Add(DataBase.rowDecode(DataBase.sr.ReadLine(), cols));
+            }
+
+            if (where != null && data.Count != 0) {
+                for (int i = data.Count - 1; i >= 0; i--) {
+                    if (!where.Parse(data[i], cols)) {
+                        data.RemoveAt(i);
+                    }
+                }
+            }
+            if (order != null && data.Count > 1) {
+                order.Sort(data, cols);
+            }
+            if (limit != null && data.Count != 0) {
+                limit.Limit(data);
             }
 
             DataBase.sr.Close();
-            string[] data = new string[0];
             return data;
         }
         static public Column[] GetColumns(string table) {
