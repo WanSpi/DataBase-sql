@@ -328,6 +328,7 @@ namespace TestDB2 {
         }
     }
     static class DataBase {
+        static private string version = "1";
         static private string db = null;
 
         static public bool Use(string name) {
@@ -374,23 +375,35 @@ namespace TestDB2 {
 
             return sts;
         }
-
-        static public bool CreateTabel(string table, Column[] columns) {
+        static public bool RemoveTable(string table) {
             if (DataBase.ExistTables(table)) {
+                File.Delete(DataBase.getPath(table));
+
+                return true;
+            } else {
                 return false;
             }
+        }
 
-            StreamWriter sw = new StreamWriter("DataBase\\" + db + "\\" + table + ".table", false);
-            sw.WriteLine("1:" + columns.Length);
+        static private void createTable(string table, Column[] columns) {
+            DataBase.sw = new StreamWriter(DataBase.getPath(table), false);
+            DataBase.sw.WriteLine("1:" + columns.Length);
             for (int i = 0; i != columns.Length; i++) {
-                sw.WriteLine(
+                DataBase.sw.WriteLine(
                     columns[i].getName() + ":" +
                     columns[i].getType() + ":" +
                     columns[i].getLength() + ":" +
                     columns[i].getDefValue()
                 );
             }
-            sw.Close();
+        }
+        static public bool CreateTable(string table, Column[] columns) {
+            if (DataBase.ExistTables(table)) {
+                return false;
+            }
+
+            DataBase.createTable(table, columns);
+            DataBase.sw.Close();
 
             return true;
         }
@@ -430,7 +443,7 @@ namespace TestDB2 {
                 return false; // DataBase is not found
             }
 
-            StreamWriter sw = new StreamWriter("DataBase\\" + db + "\\" + table + ".table", true);
+            StreamWriter sw = new StreamWriter(DataBase.getPath(table), true);
             sw.WriteLine(
                 DataBase.rowEncode(values, cols)
             );
@@ -535,17 +548,21 @@ namespace TestDB2 {
             return data;
         }
 
+        static private StreamWriter sw = null;
         static private StreamReader sr = null;
+        static private string getPath(string table) {
+            return "DataBase\\" + db + "\\" + table + ".table";
+        }
         static private Column[] getColumns(string table) {
             if (!DataBase.ExistTables(table)) {
                 return null;
             }
 
-            DataBase.sr = new StreamReader("DataBase\\" + db + "\\" + table + ".table");
+            DataBase.sr = new StreamReader(DataBase.getPath(table));
             string b = DataBase.sr.ReadLine();
             string[] sb = b.Split(new char[] { ':' });
 
-            if (sb[0] == "1") {
+            if (sb[0] == DataBase.version) {
                 int count = Convert.ToInt32(sb[1]);
                 Column[] cols = new Column[count];
 
@@ -559,11 +576,10 @@ namespace TestDB2 {
                 return null;
             }
         }
-        static public List<string[]> Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
-            Column[] cols = DataBase.getColumns(table);
+        static private List<string[]> select(Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             List<string[]> data = new List<string[]>();
 
-            while(!DataBase.sr.EndOfStream) {
+            while (!DataBase.sr.EndOfStream) {
                 data.Add(DataBase.rowDecode(DataBase.sr.ReadLine(), cols));
             }
 
@@ -583,6 +599,84 @@ namespace TestDB2 {
 
             DataBase.sr.Close();
             return data;
+        }
+        static public List<string[]> Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+            Column[] cols = DataBase.getColumns(table);
+            return DataBase.select(cols, where, order, limit);
+        }
+        static private void update(string[] oldValues, string[,] newValues, Column[] cols) {
+            for (int i = 0; i != cols.Length; i++) {
+                for (int j = 0; j != newValues.GetLength(0); j++) {
+                    if (cols[i].getName() == newValues[j, 0]) {
+                        oldValues[i] = newValues[j, 1];
+                        break;
+                    }
+                }
+            }
+        }
+        static public int Remove(string table, RequestWhere where = null) {
+            Column[] cols = DataBase.getColumns(table);
+
+            if (cols != null) {
+                List<string[]> list = DataBase.select(cols);
+
+                if (DataBase.RemoveTable(table)) {
+                    DataBase.createTable(table, cols);
+
+                    if (where == null) {
+                        DataBase.sw.Close();
+                        return list.Count;
+                    } else {
+                        int updCount = 0;
+
+                        for (int i = 0; i != list.Count; i++) {
+                            if (!where.Parse(list[i], cols)) {
+                                DataBase.sw.WriteLine(
+                                    DataBase.rowEncode(list[i], cols)
+                                );
+                                updCount++;
+                            }
+                        }
+
+                        DataBase.sw.Close();
+                        return updCount;
+                    }
+                } else {
+                    return -1;
+                }
+            } else {
+                return -1;
+            }
+        }
+        static public int Update(string table, string[,] upd, RequestWhere where = null) {
+            Column[] cols = DataBase.getColumns(table);
+
+            if (cols != null) {
+                List<string[]> list = DataBase.select(cols);
+
+                if (DataBase.RemoveTable(table)) {
+                    int updCount = 0;
+                    DataBase.createTable(table, cols);
+
+                    for (int i = 0; i != list.Count; i++) {
+                        if (where == null || where.Parse(list[i], cols)) {
+                            DataBase.update(list[i], upd, cols);
+                            updCount++;
+                        }
+
+                        DataBase.sw.WriteLine(
+                            DataBase.rowEncode(list[i], cols)
+                        );
+                    }
+
+                    DataBase.sw.Close();
+                    return updCount;
+                } else {
+                    return -1;
+                }
+            } else {
+                return -1;
+            }
         }
         static public Column[] GetColumns(string table) {
             Column[] data = DataBase.getColumns(table);

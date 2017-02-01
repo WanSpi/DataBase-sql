@@ -38,8 +38,7 @@ namespace TestDB2 {
             List<string[]> strs = DataBase.Select(
                 "new2",
                 new RequestWhere("id = 2 OR id = 1"),
-                new RequestOrder("id", "DESC"),
-                new RequestLimit(1, 1)
+                new RequestOrder("id", "DESC")
             );
             for (int i = 0; i != strs.Count; i++) {
                 for (int j = 0; j != strs[i].Length; j++) {
@@ -47,6 +46,9 @@ namespace TestDB2 {
                 }
                 Console.WriteLine();
             }
+            
+            DataBase.Remove("new2", new RequestWhere("id = 2"));
+            //DataBase.Update("new2", new string[,] { { "name", "20" } });
             // Console.WriteLine(Convert.ToInt32("$12".Substring(1)));
             //RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a') AND (a > 'a'))");
             /*
@@ -60,6 +62,9 @@ namespace TestDB2 {
             );*/
         }
 
+        private List<string> DataBaseName = new List<string>();
+        private List<string> DataBaseTable = new List<string>();
+        private List<DataGridView> DataBaseGrid = new List<DataGridView>();
         private void DataBaseTree_MouseDoubleClick(object sender, MouseEventArgs e) {
             TreeNode tn = DataBaseTree.SelectedNode;
             TreeNode ptn = tn.Parent;
@@ -73,6 +78,10 @@ namespace TestDB2 {
                     tabControl.TabPages.Add(tp);
 
                     DataGridView grid = new DataGridView();
+                    this.DataBaseName.Add(ptn.Text);
+                    this.DataBaseTable.Add(tn.Text);
+                    this.DataBaseGrid.Add(grid);
+
                     grid.Dock = System.Windows.Forms.DockStyle.Fill;
                     tp.Controls.Add(grid);
                     for (int i = 0; i != cols.Length; i++) {
@@ -96,6 +105,28 @@ namespace TestDB2 {
             CreateDataBaseForm f = new CreateDataBaseForm();
             f.Owner = this;
             f.Show();
+        }
+
+        private void SaveTableButton_Click(object sender, EventArgs e) {
+            DataBase.Use(this.DataBaseName[tabControl.SelectedIndex]);
+
+            string table = this.DataBaseTable[tabControl.SelectedIndex];
+            Column[] cols = DataBase.GetColumns(table);
+
+            DataBase.RemoveTable(table);
+            DataBase.CreateTable(table, cols);
+
+            string[] row;
+            DataGridView grid = this.DataBaseGrid[tabControl.SelectedIndex];
+            for (int i = 0; i != grid.RowCount - 1; i++) {
+                row = new string[cols.Length];
+
+                for (int j = 0; j != cols.Length; j++) {
+                    row[j] = grid[j, i].Value.ToString();
+                }
+
+                DataBase.Insert(table, row, cols);
+            }
         }
     }
 }

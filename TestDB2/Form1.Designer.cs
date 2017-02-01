@@ -26,12 +26,12 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
+            this.SaveTableButton = new System.Windows.Forms.Button();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.DataBaseTree = new System.Windows.Forms.TreeView();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.buttonAddDataBase = new System.Windows.Forms.ToolStripButton();
-            this.SaveTableButton = new System.Windows.Forms.Button();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
@@ -57,6 +57,16 @@
             // toolStripContainer1.TopToolStripPanel
             // 
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStrip1);
+            // 
+            // SaveTableButton
+            // 
+            this.SaveTableButton.Location = new System.Drawing.Point(696, 374);
+            this.SaveTableButton.Name = "SaveTableButton";
+            this.SaveTableButton.Size = new System.Drawing.Size(75, 23);
+            this.SaveTableButton.TabIndex = 2;
+            this.SaveTableButton.Text = "Save";
+            this.SaveTableButton.UseVisualStyleBackColor = true;
+            this.SaveTableButton.Click += new System.EventHandler(this.SaveTableButton_Click);
             // 
             // tabControl
             // 
@@ -105,15 +115,6 @@
             this.buttonAddDataBase.Size = new System.Drawing.Size(23, 22);
             this.buttonAddDataBase.Text = "toolStripButton1";
             this.buttonAddDataBase.Click += new System.EventHandler(this.buttonAddDataBase_Click);
-            // 
-            // SaveTableButton
-            // 
-            this.SaveTableButton.Location = new System.Drawing.Point(696, 374);
-            this.SaveTableButton.Name = "SaveTableButton";
-            this.SaveTableButton.Size = new System.Drawing.Size(75, 23);
-            this.SaveTableButton.TabIndex = 2;
-            this.SaveTableButton.Text = "Save";
-            this.SaveTableButton.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
