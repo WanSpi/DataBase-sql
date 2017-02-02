@@ -33,21 +33,25 @@ namespace TestDB2 {
 
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
-
+            /*
             DataBase.Use("mydb");
             List<string[]> strs = DataBase.Select(
                 "new2",
                 new RequestWhere("id = 2 OR id = 1"),
                 new RequestOrder("id", "DESC")
-            );
+            );*/
+            /*
             for (int i = 0; i != strs.Count; i++) {
                 for (int j = 0; j != strs[i].Length; j++) {
                     Console.Write(strs[i][j] + " ");
                 }
                 Console.WriteLine();
-            }
-            
-            DataBase.Remove("new2", new RequestWhere("id = 2"));
+            }*/
+
+            //DateObject date = new DateObject("02.02.2017");
+            //Console.WriteLine(date.GetDate("yyyy-mm-dd"));
+
+            //DataBase.Remove("new2", new RequestWhere("id = 2"));
             //DataBase.Update("new2", new string[,] { { "name", "20" } });
             // Console.WriteLine(Convert.ToInt32("$12".Substring(1)));
             //RequestWhere rw = new RequestWhere("id = 12 AND (a > 'a' OR (a < 'a') AND (a > 'a'))");
@@ -127,6 +131,12 @@ namespace TestDB2 {
 
                 DataBase.Insert(table, row, cols);
             }
+        }
+
+        private void buttonAddTable_Click(object sender, EventArgs e) {
+            CreateTableForm f = new CreateTableForm();
+            f.Owner = this;
+            f.Show();
         }
     }
 }

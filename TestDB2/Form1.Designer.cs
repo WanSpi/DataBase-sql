@@ -32,6 +32,7 @@
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.buttonAddDataBase = new System.Windows.Forms.ToolStripButton();
+            this.buttonAddTable = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
@@ -94,16 +95,18 @@
             this.imageList.Images.SetKeyName(0, "database");
             this.imageList.Images.SetKeyName(1, "table");
             this.imageList.Images.SetKeyName(2, "add_database.png");
+            this.imageList.Images.SetKeyName(3, "add_table.png");
             // 
             // toolStrip1
             // 
             this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.buttonAddDataBase});
+            this.buttonAddDataBase,
+            this.buttonAddTable});
             this.toolStrip1.Location = new System.Drawing.Point(3, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(26, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(80, 25);
             this.toolStrip1.TabIndex = 0;
             // 
             // buttonAddDataBase
@@ -115,6 +118,16 @@
             this.buttonAddDataBase.Size = new System.Drawing.Size(23, 22);
             this.buttonAddDataBase.Text = "toolStripButton1";
             this.buttonAddDataBase.Click += new System.EventHandler(this.buttonAddDataBase_Click);
+            // 
+            // buttonAddTable
+            // 
+            this.buttonAddTable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.buttonAddTable.Image = ((System.Drawing.Image)(resources.GetObject("buttonAddTable.Image")));
+            this.buttonAddTable.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.buttonAddTable.Name = "buttonAddTable";
+            this.buttonAddTable.Size = new System.Drawing.Size(23, 22);
+            this.buttonAddTable.Text = "toolStripButton1";
+            this.buttonAddTable.Click += new System.EventHandler(this.buttonAddTable_Click);
             // 
             // Form1
             // 
@@ -145,6 +158,7 @@
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton buttonAddDataBase;
         private System.Windows.Forms.Button SaveTableButton;
+        private System.Windows.Forms.ToolStripButton buttonAddTable;
     }
 }
 

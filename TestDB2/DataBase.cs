@@ -41,6 +41,85 @@ namespace TestDB2 {
             return l;
         }
     }
+    class DateObject {
+        private int d, m, y;
+
+        private void setValue(string value, char f) {
+            switch (f) {
+                case 'd': d = Convert.ToInt32(value); break;
+                case 'm': m = Convert.ToInt32(value); break;
+                case 'y': y = Convert.ToInt32(value); break;
+            }
+        }
+        public DateObject(string date, string format = "dd.mm.yyyy") {
+            string buf = date[0].ToString();
+
+            for (int i = 1; i != format.Length; i++) {
+                if (format[i] != format[i - 1]) {
+                    setValue(buf, format[i - 1]);
+                    buf = "";
+                }
+                buf += date[i];
+            }
+            setValue(buf, format[format.Length - 1]);
+        }
+
+        private string formatValue(int len, int f) {
+            string data = f.ToString();
+
+            if (data.Length < len) {
+                while (data.Length < len) {
+                    data = '0' + data;
+                }
+            } else if (data.Length > len) {
+                data = data.Substring(data.Length - len);
+            }
+
+            return data;
+        }
+        private string formatValue(int len, string f) {
+            string data = "";
+            
+            for (int i = 0; i != len; i++) {
+                data += f;
+            }
+
+            return data;
+        }
+        private string getValue(int len, char f) {
+            switch (f) {
+                case 'd': return formatValue(len, d);
+                case 'm': return formatValue(len, m);
+                case 'y': return formatValue(len, y);
+                default: return formatValue(len, f.ToString());
+            }
+        }
+        public string GetDate(string format = "dd.mm.yyyy") {
+            string date = "";
+
+            int len = 1;
+            for (int i = 1; i != format.Length; i++) {
+                if (format[i] != format[i - 1]) {
+                    date += getValue(len, format[i - 1]);
+                    len = 0;
+                }
+                len++;
+            }
+            date += getValue(len, format[format.Length - 1]);
+
+            return date;
+        }
+
+        public int GetDay() {
+            return d;
+        }
+        public int GetMonth() {
+            return m;
+        }
+        public int GetYear() {
+            return y;
+        }
+    }
     class RequestLimit {
         private int rows;
         private int offset;
@@ -328,7 +407,7 @@ namespace TestDB2 {
         }
     }
     static class DataBase {
-        static private string version = "1";
+        static private string version = "0.1";
         static private string db = null;
 
         static public bool Use(string name) {
@@ -387,7 +466,7 @@ namespace TestDB2 {
 
         static private void createTable(string table, Column[] columns) {
             DataBase.sw = new StreamWriter(DataBase.getPath(table), false);
-            DataBase.sw.WriteLine("1:" + columns.Length);
+            DataBase.sw.WriteLine(version + ":" + columns.Length);
             for (int i = 0; i != columns.Length; i++) {
                 DataBase.sw.WriteLine(
                     columns[i].getName() + ":" +
@@ -451,6 +530,17 @@ namespace TestDB2 {
             sw.Close();
             return true;
         }
+        static private string encodeInteger(string integer, int bits) {
+            int bufInt = Convert.ToInt32(integer);
+            string data = "";
+
+            for (int j = 0; j != bits; j++) {
+                data = (bufInt & 1).ToString() + data;
+                bufInt >>= 1;
+            }
+
+            return data;
+        }
         static private char[] rowEncode(string[] values, Column[] cols) {
             int bits = 0;
             for (int i = 0; i != cols.Length; i++) {
@@ -468,14 +558,23 @@ namespace TestDB2 {
                 switch (cols[i].getType()) {
                     case 0: // int
                     case 5: // text
-                        bufInt = Convert.ToInt32(values[i]);
-                        for (int j = 0; j != bits; j++) {
-                            stringBuf = (bufInt & 1).ToString() + stringBuf;
-                            bufInt >>= 1;
-                        }
+                        stringBuf = encodeInteger(values[i], bits);
                         break;
                     case 4: // bolean
                         stringBuf = values[i];
+                        break;
+                    case 3: // varchar
+                        stringBuf = "";
+                        for (int j = 0; j != values[i].Length; j++) {
+                            stringBuf += encodeInteger(((int)values[i][j]).ToString(), 8);
+                        }
+                        if (stringBuf.Length < bits) {
+                            while (stringBuf.Length < bits) {
+                                stringBuf = '0' + stringBuf;
+                            }
+                        } else if (stringBuf.Length > bits) {
+                            stringBuf = stringBuf.Substring(stringBuf.Length - bits);
+                        }
                         break;
                 }
 
@@ -517,6 +616,30 @@ namespace TestDB2 {
                     }
 
                     data = num.ToString();
+                    break;
+                case 3: // varchar
+                    int bytes = data.Length / 8;
+                    int bufInt;
+                    string varchar = "";
+                    for (int i = bytes - 1; i != 0; i--) {
+                        bufInt = 0;
+
+                        for (int j = 0; j != 8; j++) {
+                            bufInt <<= 1;
+
+                            if (data[i * 8 + j] == '1') {
+                                bufInt = bufInt | 1;
+                            }
+                        }
+
+                        if (bufInt == 0) {
+                            break;
+                        } else {
+                            varchar = (char)bufInt + varchar;
+                        }
+                    }
+                    
+                    data = varchar;
                     break;
             }
 
