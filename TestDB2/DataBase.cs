@@ -42,13 +42,16 @@ namespace TestDB2 {
         }
     }
     class DateObject {
-        private int d, m, y;
+        private int h = 0, i = 0;
+        private int d = 0, m = 0, y = 0;
 
         private void setValue(string value, char f) {
             switch (f) {
                 case 'd': d = Convert.ToInt32(value); break;
                 case 'm': m = Convert.ToInt32(value); break;
                 case 'y': y = Convert.ToInt32(value); break;
+                case 'h': h = Convert.ToInt32(value); break;
+                case 'i': i = Convert.ToInt32(value); break;
             }
         }
         public DateObject(string date, string format = "dd.mm.yyyy") {
@@ -91,6 +94,8 @@ namespace TestDB2 {
                 case 'd': return formatValue(len, d);
                 case 'm': return formatValue(len, m);
                 case 'y': return formatValue(len, y);
+                case 'h': return formatValue(len, h);
+                case 'i': return formatValue(len, i);
                 default: return formatValue(len, f.ToString());
             }
         }
@@ -118,6 +123,12 @@ namespace TestDB2 {
         }
         public int GetYear() {
             return y;
+        }
+        public int GetHour() {
+            return h;
+        }
+        public int GetMinute() {
+            return i;
         }
     }
     class RequestLimit {
@@ -492,7 +503,7 @@ namespace TestDB2 {
                 case 0: // int
                     return col.getLength();
                 case 1: // float
-                    return col.getLength() + 8;
+                    return 32;
                 case 2: // char
                     return 8;
                 case 3: // varchar
@@ -551,6 +562,7 @@ namespace TestDB2 {
 
             char[] data = new char[(int)Math.Ceiling(bits / 8F)];
 
+            DateObject date;
             string stringBuf, stringData = "";
             for (int i = 0; i != values.Length; i++) {
                 stringBuf = "";
@@ -558,6 +570,26 @@ namespace TestDB2 {
 
                 switch (cols[i].getType()) {
                     case 0: // int
+                        int bufInt = Convert.ToInt32(values[i]);
+                        if (bufInt < 0) {
+                            stringBuf = "1";
+                            bufInt = -bufInt;
+                        } else {
+                            stringBuf = "0";
+                        }
+                        stringBuf += encodeInteger(bufInt, bits - 1);
+                        break;
+                    case 1: // float
+                        values[i] = values[i].Replace(',', '.');
+                        float bufFloat = Convert.ToSingle(values[i], System.Globalization.CultureInfo.InvariantCulture);
+                        
+                        byte[] bufByte = BitConverter.GetBytes(bufFloat);
+
+                        for (int j = 0; j != bufByte.Length; j++) {
+                            stringBuf += encodeInteger((int)bufByte[j], 8);
+                        }
+
+                        break;
                     case 5: // text
                         stringBuf = encodeInteger(values[i], bits);
                         break;
@@ -578,8 +610,14 @@ namespace TestDB2 {
                             stringBuf = stringBuf.Substring(stringBuf.Length - bits);
                         }
                         break;
+                    case 7: // time (11) (hh:ii) (5, 6)
+                        date = new DateObject(values[i], "hh:ii");
+                        stringBuf =
+                            DataBase.encodeInteger(date.GetHour(), 5) +
+                            DataBase.encodeInteger(date.GetMinute(), 6);
+                        break;
                     case 6: // date (33) (dd.mm.yyyy) (5, 4, 24)
-                        DateObject date = new DateObject(values[i]);
+                        date = new DateObject(values[i]);
                         stringBuf =
                             DataBase.encodeInteger(date.GetDay(), 5) +
                             DataBase.encodeInteger(date.GetMonth(), 4) +
@@ -635,15 +673,35 @@ namespace TestDB2 {
             return num;
         }
         static private string bitsToString(string data, Column col) {
+            int bufInt;
+            DateObject date;
             switch (col.getType()) {
                 case 0: // int
+                    char op = data[0];
+                    bufInt = bitsToInteger(data.Substring(1));
+
+                    if (op == '1') {
+                        bufInt = -bufInt;
+                    }
+
+                    data = bufInt.ToString();
+                    break;
+                case 1: // float
+                    byte[] bufByte = new byte[4];
+                    for (int i = 0; i != bufByte.Length; i++) {
+                        bufByte[i] = (byte)bitsToInteger(data.Substring(i * 8, 8));
+                    }
+
+                    float bufFloat = BitConverter.ToSingle(bufByte, 0);
+                    data = bufFloat.ToString();
+
+                    break;
                 case 5: // text
                     data = bitsToInteger(data).ToString();
                     break;
                 case 2: // char
                 case 3: // varchar
                     int bytes = data.Length / 8;
-                    int bufInt;
                     string varchar = "";
                     for (int i = bytes - 1; i != -1; i--) {
                         bufInt = 0;
@@ -665,8 +723,16 @@ namespace TestDB2 {
                     
                     data = varchar;
                     break;
+                case 7: // time (11) (hh:ii) (5, 6)
+                    date = new DateObject(
+                        fixStringNumber(bitsToInteger(data.Substring(0, 5)).ToString(), 2) +
+                        fixStringNumber(bitsToInteger(data.Substring(5, 6)).ToString(), 2),
+                        "hhii"
+                    );
+                    data = date.GetDate("hh:ii");
+                    break;
                 case 6: // date (33) (dd.mm.yyyy) (5, 4, 24)
-                    DateObject date = new DateObject(
+                    date = new DateObject(
                         fixStringNumber(bitsToInteger(data.Substring(0, 5)).ToString(), 2) +
                         fixStringNumber(bitsToInteger(data.Substring(5, 4)).ToString(), 2) +
                         fixStringNumber(bitsToInteger(data.Substring(9, 24)).ToString(), 4),
