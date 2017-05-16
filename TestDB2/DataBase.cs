@@ -486,7 +486,7 @@ namespace TestDB2 {
         }
     }
     static class DataBase {
-        static private string version = "0.2";
+        static private string version = "0.1";
         static private string db = null;
 
         static public bool Use(string name) {
