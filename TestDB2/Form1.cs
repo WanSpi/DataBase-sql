@@ -92,12 +92,15 @@ namespace TestDB2 {
                         grid.Columns.Add(i.ToString(), cols[i].getName());
                     }
 
-                    List<string[]> list = DataBase.Select(tn.Text);
-                    if (list.Count != 0) {
-                        for (int i = 0; i != list.Count; i++) {
+                    ResponseObject res = DataBase.Select(tn.Text);
+                    //List<string[]> list = DataBase.Select(tn.Text);
+                    if (res != null) {
+                        int ind = 0;
+
+                        while (res.SetIndex(ind++)) {
                             grid.Rows.Add();
-                            for (int j = 0; j != list[i].Length; j++) {
-                                grid[j, i].Value = list[i][j];
+                            for (int i = 0; i != cols.Length; i++) {
+                                grid[i, ind - 1].Value = res.GetValue(cols[i].getName());
                             }
                         }
                     }

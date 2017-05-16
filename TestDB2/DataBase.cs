@@ -417,8 +417,76 @@ namespace TestDB2 {
             }
         }
     }
+    class ResponseRow {
+        private Column[] cols = null;
+        private string[] res = null;
+
+        private int getIndex(string name) {
+            for (int i = 0; i != cols.Length; i++) {
+                if (cols[i].getName() == name) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public int GetValueInt(string name) {
+            string value = GetValue(name);
+
+            return Convert.ToInt32(value);
+        }
+        public string GetValue(string name) {
+            int ind = getIndex(name);
+
+            if (ind == -1) {
+                return "";
+            }
+
+            return this.res[ind];
+        }
+
+        public ResponseRow(Column[] cols, string[] res) {
+            this.cols = cols;
+            this.res = res;
+        }
+    }
+    class ResponseObject {
+        private int index = 0;
+
+        private Column[] cols = null;
+        private List<ResponseRow> list = null;
+
+        public string GetValue(string name) {
+            return this.list[this.index].GetValue(name);
+        }
+        public int GetValueInt(string name) {
+            return this.list[this.index].GetValueInt(name);
+        }
+
+        public bool SetIndex(int ind) {
+            if (-1 < ind && ind < list.Count) {
+                this.index = ind;
+                return true;
+            }
+
+            return false;
+        }
+        public int GetIndex() {
+            return this.index;
+        }
+
+        public ResponseObject(Column[] cols, List<string[]> list) {
+            this.cols = cols;
+
+            this.list = new List<ResponseRow>();
+            for (int i = 0; i != list.Count; i++) {
+                this.list.Add(new ResponseRow(cols, list[i]));
+            }
+        }
+    }
     static class DataBase {
-        static private string version = "0.1";
+        static private string version = "0.2";
         static private string db = null;
 
         static public bool Use(string name) {
@@ -822,9 +890,15 @@ namespace TestDB2 {
             DataBase.sr.Close();
             return data;
         }
-        static public List<string[]> Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+        static public ResponseObject Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             Column[] cols = DataBase.getColumns(table);
-            return DataBase.select(cols, where, order, limit);
+            List<string[]> list = DataBase.select(cols, where, order, limit);
+
+            if (list.Count == 0) {
+                return null;
+            }
+
+            return new ResponseObject(cols, list);
         }
         static private void update(string[] oldValues, string[,] newValues, Column[] cols) {
             for (int i = 0; i != cols.Length; i++) {
