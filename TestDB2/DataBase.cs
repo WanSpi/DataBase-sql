@@ -565,6 +565,29 @@ namespace TestDB2 {
 
             return true;
         }
+        static public bool ChangeColumns(string table, Column[] columns) {
+            if (DataBase.ExistTables(table)) {
+                return false;
+            }
+
+            ResponseObject res = DataBase.Select(table);
+            DataBase.RemoveTable(table);
+            DataBase.CreateTable(table, columns);
+
+            int i = 0;
+            string[] vals;
+            while (res.SetIndex(i++)) {
+                vals = new string[columns.Length];
+
+                for (int j = 0; j != columns.Length; j++) {
+                    vals[j] = res.GetValue(columns[j].getName());
+                }
+
+                DataBase.Insert(table, vals, columns);
+            }
+
+            return true;
+        }
 
         static private int getBits(Column col) {
             switch (col.getType()) {

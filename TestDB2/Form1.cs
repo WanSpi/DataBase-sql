@@ -36,6 +36,15 @@ namespace TestDB2 {
             DataBaseTree_Reload();
             resize();
             /*
+            DataBase.Use("Game");
+            Column[] cols = DataBase.GetColumns("New");
+
+            Array.Resize<Column>(ref cols, cols.Length + 1);
+            cols[cols.Length - 1] = new Column("Date", ColumnType.VARCHAR, 100);
+
+            DataBase.ChangeColumns("New", cols);*/
+
+            /*
             DataBase.Use("mydb");
             List<string[]> strs = DataBase.Select(
                 "new2",
