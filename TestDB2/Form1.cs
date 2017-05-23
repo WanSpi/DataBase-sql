@@ -38,6 +38,20 @@ namespace TestDB2 {
 
             /*
             DataBase.Use("Game");
+
+            ResponseRow row = new ResponseRow("New");
+            row.SetValue("name", "asd");
+            row.Save();
+
+            ResponseObject res = DataBase.Select("New");
+            while(res.NextIndex()) {
+
+                Debug.Print(res.GetValue("id"));
+            }
+             */
+
+            /*
+            DataBase.Use("Game");
             Column[] cols = DataBase.GetColumns("New");
 
             Array.Resize<Column>(ref cols, cols.Length + 1);

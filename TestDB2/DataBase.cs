@@ -135,7 +135,7 @@ namespace TestDB2 {
         private int rows;
         private int offset;
 
-        public void Limit(List<string[]> data) {
+        public void Limit(List<ResponseRow> data) {
             if (this.offset != 0) {
                 int offset = this.offset;
                 while (offset != 0) {
@@ -189,26 +189,13 @@ namespace TestDB2 {
                     return false;
             }
         }
-        public void Sort(List<string[]> data, Column[] cols) {
-            int colNum = -1, colType = 0;
-            int i;
-            for (i = 0; i != cols.Length; i++) {
-                if (cols[i].getName() == this.col) {
-                    colNum = i;
-                    colType = cols[i].getType();
-                    break;
-                }
-            }
-            if (colNum == -1) {
-                return;
-            }
-
+        public void Sort(List<ResponseRow> data, Column[] cols) {
             bool ret = false, max;
-            string[] buf;
+            ResponseRow buf;
             while(!ret) {
                 ret = true;
-                for (i = 0; i != data.Count - 1; i++) {
-                    max = checkMax(data[i][colNum], data[i + 1][colNum], colType);
+                for (int i = 0; i != data.Count - 1; i++) {
+                    max = checkMax(data[i].GetValue(col), data[i + 1].GetValue(col), 0);
                     if ((this.type == 1 && max) || (this.type == 0 && !max)) {
                         buf = data[i + 1];
                         data[i + 1] = data[i];
@@ -418,6 +405,8 @@ namespace TestDB2 {
         }
     }
     public class ResponseRow {
+        private string table = null;
+        private int identificator = 0;
         private Column[] cols = null;
         private string[] res = null;
 
@@ -444,6 +433,60 @@ namespace TestDB2 {
             }
 
             return this.res[ind];
+        }
+        public bool SetValue(string name, string value) {
+            int ind = getIndex(name);
+
+            if (ind == -1) {
+                return false;
+            }
+
+            res[ind] = value;
+            return true;
+        }
+
+        public int GetIdentificator() {
+            return this.identificator;
+        }
+        public void SetIdentificator(int i) {
+            this.identificator = i;
+        }
+
+        public void SetTable(string table) {
+            this.table = table;
+        }
+
+        public bool Save() {
+            if (this.table == null) {
+                return false;
+            }
+
+            if (this.identificator == 0) {
+                return DataBase.Insert(this.table, this.ToString(), this.cols);
+            } else {
+                return DataBase.Update(this.table, this);
+            }
+        }
+
+        public string[] ToString() {
+            return res;
+        }
+
+        public ResponseRow(string table, string[] res = null) {
+            this.table = table;
+            this.cols = DataBase.GetColumns(table);
+
+            if (res == null) {
+                res = new string[this.cols.Length];
+
+                for (int i = 0; i != res.Length; i++) {
+                    res[i] = "";
+                }
+
+                this.res = res;
+            } else {
+                this.res = res;
+            }
         }
 
         public ResponseRow(Column[] cols, string[] res) {
@@ -495,13 +538,9 @@ namespace TestDB2 {
             return null;
         }
 
-        public ResponseObject(Column[] cols, List<string[]> list) {
+        public ResponseObject(Column[] cols, List<ResponseRow> list) {
             this.cols = cols;
-
-            this.list = new List<ResponseRow>();
-            for (int i = 0; i != list.Count; i++) {
-                this.list.Add(new ResponseRow(cols, list[i]));
-            }
+            this.list = list;
         }
     }
     public static class DataBase {
@@ -609,7 +648,7 @@ namespace TestDB2 {
             return true;
         }
 
-        static private int getBits(Column col) {
+        private static int getBits(Column col) {
             switch (col.getType()) {
                 case 0: // int
                     return col.getLength();
@@ -633,7 +672,7 @@ namespace TestDB2 {
                     return 0;
             }
         }
-        static public bool Insert(string table, string[] values, Column[] cols = null) {
+        public static bool Insert(string table, string[] values, Column[] cols = null) {
             if (cols == null) {
                 cols = DataBase.GetColumns(table);
             }
@@ -681,7 +720,7 @@ namespace TestDB2 {
 
                 switch (cols[i].getType()) {
                     case 0: // int
-                        int bufInt = Convert.ToInt32(values[i]);
+                        int bufInt = values[i].Length == 0 ? 0 : Convert.ToInt32(values[i]);
                         if (bufInt < 0) {
                             stringBuf = "1";
                             bufInt = -bufInt;
@@ -909,16 +948,21 @@ namespace TestDB2 {
                 return null;
             }
         }
-        static private List<string[]> select(Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
-            List<string[]> data = new List<string[]>();
+        static private List<ResponseRow> select(string table, Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+            List<ResponseRow> data = new List<ResponseRow>();
 
+            int id = 1;
+            ResponseRow buf;
             while (!DataBase.sr.EndOfStream) {
-                data.Add(DataBase.rowDecode(DataBase.sr.ReadLine(), cols));
+                buf = new ResponseRow(cols, DataBase.rowDecode(DataBase.sr.ReadLine(), cols));
+                buf.SetIdentificator(id++);
+                buf.SetTable(table);
+                data.Add(buf);
             }
 
             if (where != null && data.Count != 0) {
                 for (int i = data.Count - 1; i >= 0; i--) {
-                    if (!where.Parse(data[i], cols)) {
+                    if (!where.Parse(data[i].ToString(), cols)) {
                         data.RemoveAt(i);
                     }
                 }
@@ -935,7 +979,7 @@ namespace TestDB2 {
         }
         static public ResponseObject Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             Column[] cols = DataBase.getColumns(table);
-            List<string[]> list = DataBase.select(cols, where, order, limit);
+            List<ResponseRow> list = DataBase.select(table, cols, where, order, limit);
 
             if (list.Count == 0) {
                 return null;
@@ -957,7 +1001,7 @@ namespace TestDB2 {
             Column[] cols = DataBase.getColumns(table);
 
             if (cols != null) {
-                List<string[]> list = DataBase.select(cols);
+                List<ResponseRow> list = DataBase.select(table, cols);
 
                 if (DataBase.RemoveTable(table)) {
                     DataBase.createTable(table, cols);
@@ -969,9 +1013,9 @@ namespace TestDB2 {
                         int updCount = 0;
 
                         for (int i = 0; i != list.Count; i++) {
-                            if (!where.Parse(list[i], cols)) {
+                            if (!where.Parse(list[i].ToString(), cols)) {
                                 DataBase.sw.WriteLine(
-                                    DataBase.rowEncode(list[i], cols)
+                                    DataBase.rowEncode(list[i].ToString(), cols)
                                 );
                                 updCount++;
                             }
@@ -987,24 +1031,54 @@ namespace TestDB2 {
                 return -1;
             }
         }
-        static public int Update(string table, string[,] upd, RequestWhere where = null) {
+        public static bool Update(string table, ResponseRow res) {
             Column[] cols = DataBase.getColumns(table);
 
             if (cols != null) {
-                List<string[]> list = DataBase.select(cols);
+                List<ResponseRow> list = DataBase.select(table, cols);
+
+                if (DataBase.RemoveTable(table)) {
+                    DataBase.createTable(table, cols);
+
+                    for (int i = 0; i != list.Count; i++) {
+                        if (i + 1 == res.GetIdentificator()) {
+                            DataBase.sw.WriteLine(
+                                DataBase.rowEncode(res.ToString(), cols)
+                            );
+                        } else {
+                            DataBase.sw.WriteLine(
+                                DataBase.rowEncode(list[i].ToString(), cols)
+                            );
+                        }
+                    }
+
+                    DataBase.sw.Close();
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        public static int Update(string table, string[,] upd, RequestWhere where = null) {
+            Column[] cols = DataBase.getColumns(table);
+
+            if (cols != null) {
+                List<ResponseRow> list = DataBase.select(table, cols);
 
                 if (DataBase.RemoveTable(table)) {
                     int updCount = 0;
                     DataBase.createTable(table, cols);
 
                     for (int i = 0; i != list.Count; i++) {
-                        if (where == null || where.Parse(list[i], cols)) {
-                            DataBase.update(list[i], upd, cols);
+                        if (where == null || where.Parse(list[i].ToString(), cols)) {
+                            DataBase.update(list[i].ToString(), upd, cols);
                             updCount++;
                         }
 
                         DataBase.sw.WriteLine(
-                            DataBase.rowEncode(list[i], cols)
+                            DataBase.rowEncode(list[i].ToString(), cols)
                         );
                     }
 
