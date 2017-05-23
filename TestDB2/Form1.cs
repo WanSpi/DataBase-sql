@@ -35,14 +35,16 @@ namespace TestDB2 {
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
             resize();
+
             /*
             DataBase.Use("Game");
             Column[] cols = DataBase.GetColumns("New");
 
             Array.Resize<Column>(ref cols, cols.Length + 1);
-            cols[cols.Length - 1] = new Column("Date", ColumnType.VARCHAR, 100);
+            cols[cols.Length - 1] = new Column("Date 1", ColumnType.VARCHAR, 100);
 
-            DataBase.ChangeColumns("New", cols);*/
+            DataBase.ChangeColumns("New", cols).ToString();
+            */
 
             /*
             DataBase.Use("mydb");
@@ -140,7 +142,11 @@ namespace TestDB2 {
                 row = new string[cols.Length];
 
                 for (int j = 0; j != cols.Length; j++) {
-                    row[j] = grid[j, i].Value.ToString();
+                    if (grid[j, i].Value != null) {
+                        row[j] = grid[j, i].Value.ToString();
+                    } else {
+                        row[j] = "";
+                    }
                 }
 
                 DataBase.Insert(table, row, cols);
@@ -181,8 +187,6 @@ namespace TestDB2 {
 
         private void toolStripContainer1_ContentPanel_Resize(object sender, EventArgs e) {
             resize();
-
-            Debug.Print(this.Size.ToString());
         }
     }
 }

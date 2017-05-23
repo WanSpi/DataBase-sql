@@ -452,7 +452,7 @@ namespace TestDB2 {
         }
     }
     public class ResponseObject {
-        private int index = 0;
+        private int index = -1;
 
         private Column[] cols = null;
         private List<ResponseRow> list = null;
@@ -464,9 +464,17 @@ namespace TestDB2 {
             return this.list[this.index].GetValueInt(name);
         }
 
-        public bool SetIndex(int ind) {
-            if (-1 < ind && ind < list.Count) {
-                this.index = ind;
+        public bool NextIndex() {
+            if (this.index + 1 < list.Count) {
+                this.index++;
+                return true;
+            }
+
+            return false;
+        }
+        public bool SetIndex(int index) {
+            if (-1 < index && index < list.Count) {
+                this.index = index;
                 return true;
             }
 
@@ -474,6 +482,17 @@ namespace TestDB2 {
         }
         public int GetIndex() {
             return this.index;
+        }
+
+        public ResponseRow GetRow() {
+            return list[index];
+        }
+        public ResponseRow GetRow(int index) {
+            if (-1 < index && index < list.Count) {
+                return list[index];
+            }
+
+            return null;
         }
 
         public ResponseObject(Column[] cols, List<string[]> list) {
@@ -519,7 +538,7 @@ namespace TestDB2 {
             }
         }
 
-        static public bool ExistTables(string table) {
+        static public bool ExistTable(string table) {
             return File.Exists("DataBase\\" + db + "\\" + table + ".table");
         }
 
@@ -534,7 +553,7 @@ namespace TestDB2 {
             return sts;
         }
         static public bool RemoveTable(string table) {
-            if (DataBase.ExistTables(table)) {
+            if (DataBase.ExistTable(table)) {
                 File.Delete(DataBase.getPath(table));
 
                 return true;
@@ -556,7 +575,7 @@ namespace TestDB2 {
             }
         }
         static public bool CreateTable(string table, Column[] columns) {
-            if (DataBase.ExistTables(table)) {
+            if (DataBase.ExistTable(table)) {
                 return false;
             }
 
@@ -566,7 +585,7 @@ namespace TestDB2 {
             return true;
         }
         static public bool ChangeColumns(string table, Column[] columns) {
-            if (DataBase.ExistTables(table)) {
+            if (!DataBase.ExistTable(table)) {
                 return false;
             }
 
@@ -574,16 +593,17 @@ namespace TestDB2 {
             DataBase.RemoveTable(table);
             DataBase.CreateTable(table, columns);
 
-            int i = 0;
-            string[] vals;
-            while (res.SetIndex(i++)) {
-                vals = new string[columns.Length];
+            if (res != null) {
+                string[] vals;
+                while (res.NextIndex()) {
+                    vals = new string[columns.Length];
 
-                for (int j = 0; j != columns.Length; j++) {
-                    vals[j] = res.GetValue(columns[j].getName());
+                    for (int i = 0; i != columns.Length; i++) {
+                        vals[i] = res.GetValue(columns[i].getName());
+                    }
+
+                    DataBase.Insert(table, vals, columns);
                 }
-
-                DataBase.Insert(table, vals, columns);
             }
 
             return true;
@@ -620,7 +640,7 @@ namespace TestDB2 {
 
             if (values.Length != cols.Length) {
                 return false;
-            } else if (!DataBase.ExistTables(table)) {
+            } else if (!DataBase.ExistTable(table)) {
                 return false; // DataBase is not found
             }
 
@@ -867,7 +887,7 @@ namespace TestDB2 {
             return "DataBase\\" + db + "\\" + table + ".table";
         }
         static private Column[] getColumns(string table) {
-            if (!DataBase.ExistTables(table)) {
+            if (!DataBase.ExistTable(table)) {
                 return null;
             }
 
