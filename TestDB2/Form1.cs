@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,7 @@ namespace TestDB2 {
 
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
+            resize();
             /*
             DataBase.Use("mydb");
             List<string[]> strs = DataBase.Select(
@@ -140,6 +142,38 @@ namespace TestDB2 {
             CreateTableForm f = new CreateTableForm();
             f.Owner = this;
             f.Show();
+        }
+
+        private void tabControl_MouseClick(object sender, MouseEventArgs e) {
+            Debug.Print(sender.ToString());
+
+            Debug.Print(e.Location.ToString());
+        }
+
+        private int formWidth = 0;
+        private int formHeight = 0;
+        private void resize() {
+            if (formWidth == 0 && formHeight == 0) {
+                formWidth = this.Size.Width;
+                formHeight = this.Size.Height;
+                return;
+            }
+
+            int width = this.Size.Width - formWidth;
+            int height = this.Size.Height - formHeight;
+
+            SaveTableButton.Location = new Point(SaveTableButton.Location.X + width, SaveTableButton.Location.Y + height);
+            DataBaseTree.Size = new System.Drawing.Size(DataBaseTree.Size.Width, DataBaseTree.Size.Height + height);
+            tabControl.Size = new System.Drawing.Size(tabControl.Size.Width + width, tabControl.Size.Height + height);
+            
+            formWidth = this.Size.Width;
+            formHeight = this.Size.Height;
+        }
+
+        private void toolStripContainer1_ContentPanel_Resize(object sender, EventArgs e) {
+            resize();
+
+            Debug.Print(this.Size.ToString());
         }
     }
 }

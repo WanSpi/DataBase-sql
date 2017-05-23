@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TestDB2 {
-    static class ColumnType {
+    public static class ColumnType {
         static public int INT = 0;
         static public int FLOAT = 1;
         static public int CHAR = 2;
@@ -17,7 +17,7 @@ namespace TestDB2 {
         static public int TIME = 7;
         static public int DATETIME = 8;
     }
-    class Column {
+    public class Column {
         private string n, dv;
         private int t, l;
 
@@ -41,7 +41,7 @@ namespace TestDB2 {
             return l;
         }
     }
-    class DateObject {
+    public class DateObject {
         private int h = 0, i = 0;
         private int d = 0, m = 0, y = 0;
 
@@ -131,7 +131,7 @@ namespace TestDB2 {
             return i;
         }
     }
-    class RequestLimit {
+    public class RequestLimit {
         private int rows;
         private int offset;
 
@@ -161,7 +161,7 @@ namespace TestDB2 {
             this.rows = rows;
         }
     }
-    class RequestOrder {
+    public class RequestOrder {
         int type;
         string col;
 
@@ -223,7 +223,7 @@ namespace TestDB2 {
             this.type = type == "ASC" ? 1 : 0;
         }
     }
-    class RequestWhere {
+    public class RequestWhere {
         class WhereLevelOne {
             string name1;
             string name2;
@@ -417,7 +417,7 @@ namespace TestDB2 {
             }
         }
     }
-    class ResponseRow {
+    public class ResponseRow {
         private Column[] cols = null;
         private string[] res = null;
 
@@ -451,7 +451,7 @@ namespace TestDB2 {
             this.res = res;
         }
     }
-    class ResponseObject {
+    public class ResponseObject {
         private int index = 0;
 
         private Column[] cols = null;
@@ -485,7 +485,7 @@ namespace TestDB2 {
             }
         }
     }
-    static class DataBase {
+    public static class DataBase {
         static private string version = "0.1";
         static private string db = null;
 

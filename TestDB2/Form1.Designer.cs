@@ -48,6 +48,7 @@
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tabControl);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.DataBaseTree);
             this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(783, 409);
+            this.toolStripContainer1.ContentPanel.Resize += new System.EventHandler(this.toolStripContainer1_ContentPanel_Resize);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
@@ -71,11 +72,12 @@
             // 
             // tabControl
             // 
-            this.tabControl.Location = new System.Drawing.Point(127, 3);
+            this.tabControl.Location = new System.Drawing.Point(145, 3);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(656, 365);
+            this.tabControl.Size = new System.Drawing.Size(638, 365);
             this.tabControl.TabIndex = 1;
+            this.tabControl.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tabControl_MouseClick);
             // 
             // DataBaseTree
             // 
@@ -84,7 +86,7 @@
             this.DataBaseTree.Location = new System.Drawing.Point(0, 3);
             this.DataBaseTree.Name = "DataBaseTree";
             this.DataBaseTree.SelectedImageIndex = 0;
-            this.DataBaseTree.Size = new System.Drawing.Size(121, 406);
+            this.DataBaseTree.Size = new System.Drawing.Size(139, 406);
             this.DataBaseTree.TabIndex = 0;
             this.DataBaseTree.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DataBaseTree_MouseDoubleClick);
             // 
@@ -106,7 +108,7 @@
             this.buttonAddTable});
             this.toolStrip1.Location = new System.Drawing.Point(3, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(80, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(49, 25);
             this.toolStrip1.TabIndex = 0;
             // 
             // buttonAddDataBase
