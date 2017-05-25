@@ -949,17 +949,30 @@ namespace TestDB2 {
                 return null;
             }
         }
+        private static List<string> breakRows(string date, int bytes) {
+            List<string> rows = new List<string>();
+
+            string buf = "";
+            for (int i = 0; i != date.Length; i++) {
+                if (i % bytes == 0 && i != 0) {
+                    rows.Add(buf);
+                    buf = "";
+                }
+
+                buf += date[i];
+            }
+            rows.Add(buf);
+
+            return rows;
+        }
         static private List<ResponseRow> select(string table, Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             List<ResponseRow> data = new List<ResponseRow>();
 
             int id = 1;
             ResponseRow buf;
-            string dataLine = "";
-            while (!DataBase.sr.EndOfStream) {
-                dataLine += DataBase.sr.ReadLine();
-            }
+            string dataLine = DataBase.sr.ReadToEnd();
 
-            if (dataLine == "") {
+            if (dataLine == "" || dataLine == null) {
                 DataBase.sr.Close();
                 return data;
             }
@@ -969,8 +982,7 @@ namespace TestDB2 {
                 bits += DataBase.getBits(cols[i]);
             }
             bits += bits % 8;
-
-            List<string> l = (from Match m in Regex.Matches(dataLine, @".{" + (bits / 8) + "}") select m.Value).ToList();
+            List<string> l = breakRows(dataLine, bits / 8);// (from Match m in Regex.Matches(dataLine, @".{" + (bits / 8) + "}") select m.Value).ToList();
 
             for (int i = 0; i != l.Count; i++) {
                 buf = new ResponseRow(cols, DataBase.rowDecode(l[i], cols));
