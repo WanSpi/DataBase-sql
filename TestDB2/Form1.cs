@@ -37,6 +37,9 @@ namespace TestDB2 {
             resize();
 
             /*
+            ConverterBase.Converter("DataBase\\Game\\New.table", "0.1", "0.2");
+            */
+            /*
             DataBase.Use("Game");
 
             ResponseRow row = new ResponseRow("New");
