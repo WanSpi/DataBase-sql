@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace TestDB2 {
@@ -544,7 +545,7 @@ namespace TestDB2 {
         }
     }
     public static class DataBase {
-        static private string version = "0.1";
+        static private string version = "0.2";
         static private string db = null;
 
         static public bool Use(string name) {
@@ -684,7 +685,7 @@ namespace TestDB2 {
             }
 
             StreamWriter sw = new StreamWriter(DataBase.getPath(table), true);
-            sw.WriteLine(
+            sw.Write(
                 DataBase.rowEncode(values, cols)
             );
 
@@ -953,8 +954,26 @@ namespace TestDB2 {
 
             int id = 1;
             ResponseRow buf;
+            string dataLine = "";
             while (!DataBase.sr.EndOfStream) {
-                buf = new ResponseRow(cols, DataBase.rowDecode(DataBase.sr.ReadLine(), cols));
+                dataLine += DataBase.sr.ReadLine();
+            }
+
+            if (dataLine == "") {
+                DataBase.sr.Close();
+                return data;
+            }
+
+            int bits = 0;
+            for (int i = 0; i != cols.Length; i++) {
+                bits += DataBase.getBits(cols[i]);
+            }
+            bits += bits % 8;
+
+            List<string> l = (from Match m in Regex.Matches(dataLine, @".{" + (bits / 8) + "}") select m.Value).ToList();
+
+            for (int i = 0; i != l.Count; i++) {
+                buf = new ResponseRow(cols, DataBase.rowDecode(l[i], cols));
                 buf.SetIdentificator(id++);
                 buf.SetTable(table);
                 data.Add(buf);
@@ -1014,7 +1033,7 @@ namespace TestDB2 {
 
                         for (int i = 0; i != list.Count; i++) {
                             if (!where.Parse(list[i].ToString(), cols)) {
-                                DataBase.sw.WriteLine(
+                                DataBase.sw.Write(
                                     DataBase.rowEncode(list[i].ToString(), cols)
                                 );
                                 updCount++;
@@ -1042,11 +1061,11 @@ namespace TestDB2 {
 
                     for (int i = 0; i != list.Count; i++) {
                         if (i + 1 == res.GetIdentificator()) {
-                            DataBase.sw.WriteLine(
+                            DataBase.sw.Write(
                                 DataBase.rowEncode(res.ToString(), cols)
                             );
                         } else {
-                            DataBase.sw.WriteLine(
+                            DataBase.sw.Write(
                                 DataBase.rowEncode(list[i].ToString(), cols)
                             );
                         }
@@ -1077,7 +1096,7 @@ namespace TestDB2 {
                             updCount++;
                         }
 
-                        DataBase.sw.WriteLine(
+                        DataBase.sw.Write(
                             DataBase.rowEncode(list[i].ToString(), cols)
                         );
                     }
