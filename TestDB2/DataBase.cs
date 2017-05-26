@@ -411,6 +411,8 @@ namespace TestDB2 {
         private Column[] cols = null;
         private string[] res = null;
 
+        private Dictionary<string, ResponseObject> JoinTable = null;
+
         private int getIndex(string name) {
             for (int i = 0; i != cols.Length; i++) {
                 if (cols[i].getName() == name) {
@@ -473,6 +475,25 @@ namespace TestDB2 {
             return res;
         }
 
+        public ResponseObject GetChild(string name) {
+            if (JoinTable == null) {
+                return null;
+            }
+
+            if (!JoinTable.ContainsKey(name)) {
+                return null;
+            }
+
+            return JoinTable[name];
+        }
+        public void SetChild(string name, ResponseObject response) {
+            if (JoinTable == null) {
+                JoinTable = new Dictionary<string, ResponseObject>();
+            }
+
+            JoinTable[name] = response;
+        }
+
         public ResponseRow(string table, string[] res = null) {
             this.table = table;
             this.cols = DataBase.GetColumns(table);
@@ -496,10 +517,13 @@ namespace TestDB2 {
         }
     }
     public class ResponseObject {
-        private int index = -1;
+        private bool first = true;
+        private int index = 0;
 
         private Column[] cols = null;
         private List<ResponseRow> list = null;
+
+        public int Count = 0;
 
         public string GetValue(string name) {
             return this.list[this.index].GetValue(name);
@@ -509,9 +533,19 @@ namespace TestDB2 {
         }
 
         public bool NextIndex() {
+            if (first && list.Count != 0) {
+                first = false;
+                return true;
+            }
+
             if (this.index + 1 < list.Count) {
                 this.index++;
                 return true;
+            }
+
+            if (this.index + 1 >= list.Count) {
+                first = true;
+                this.index = 0;
             }
 
             return false;
@@ -538,10 +572,76 @@ namespace TestDB2 {
 
             return null;
         }
+        public void AddRow(ResponseRow row) {
+            list.Add(row);
+            this.Count++;
+        }
+
+        public Column[] GetColumns() {
+            return cols;
+        }
 
         public ResponseObject(Column[] cols, List<ResponseRow> list) {
             this.cols = cols;
             this.list = list;
+
+            this.Count = list.Count;
+        }
+
+        public ResponseObject GetRowChildren(string name) {
+            return list[index].GetChild(name);
+        }
+
+        private void setResponseObject(ResponseObject res, string table, string thisColumn, string tableColumn) {
+            string val = null;
+            ResponseObject resNew = null;
+            for (int i = 0; i != list.Count; i++) {
+                val = list[i].GetValue(thisColumn);
+
+                if (val == "") {
+                    continue;
+                }
+
+                resNew = new ResponseObject(res.GetColumns(), new List<ResponseRow>());
+                for (int j = 0; j != res.Count; j++) {
+                    res.SetIndex(j);
+
+                    if (val == res.GetValue(tableColumn)) {
+                        resNew.AddRow(res.GetRow());
+                    }
+                }
+
+                list[i].SetChild(table, resNew);
+            }
+        }
+        public bool Join(string table, string thisColumn, string tableColumn) {
+            List<string> values = new List<string>();
+
+            string val = null;
+            for (int i = 0; i != list.Count; i++) {
+                val = list[i].GetValue(thisColumn);
+
+                if (val == "") {
+                    continue;
+                }
+
+                if (!values.Contains(val)) {
+                    values.Add(val);
+                }
+            }
+
+            string where = "";
+            for (int i = 0; i != values.Count; i++) {
+                where += tableColumn + " = '" + values[i] + "'" + (i != values.Count - 1 ? " OR " : "");
+            }
+
+            ResponseObject res = DataBase.Select(table, new RequestWhere(where));
+            if (res == null) {
+                return false;
+            }
+
+            setResponseObject(res, table, thisColumn, tableColumn);
+            return true;
         }
     }
     public static class DataBase {
