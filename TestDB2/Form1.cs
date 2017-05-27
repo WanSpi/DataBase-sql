@@ -36,6 +36,13 @@ namespace TestDB2 {
             DataBaseTree_Reload();
             resize();
 
+            /*ConverterBase.Converter("DataBase\\Game\\AnimationData.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\Animations.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\CharacteristicAttack.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\CharacteristicElements.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\Characteristics.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\MovementPoints.table", "0.1", "0.2");
+            ConverterBase.Converter("DataBase\\Game\\Movements.table", "0.1", "0.2");*/
             /*
             ConverterBase.Converter("DataBase\\Game\\New.table", "0.1", "0.2");
             */

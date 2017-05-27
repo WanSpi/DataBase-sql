@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConverterBase.cs" />
     <Compile Include="CreateDataBaseForm.cs">
       <SubType>Form</SubType>
     </Compile>

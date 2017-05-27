@@ -1,0 +1,11 @@
+P:\Work\DataBase-sql\TestDB2\bin\Release\TestDB2.exe.config
+P:\Work\DataBase-sql\TestDB2\bin\Release\TestDB2.exe
+P:\Work\DataBase-sql\TestDB2\bin\Release\TestDB2.pdb
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.csprojResolveAssemblyReference.cache
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.CreateDataBaseForm.resources
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.CreateTableForm.resources
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.Form1.resources
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.Properties.Resources.resources
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.csproj.GenerateResource.Cache
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.exe
+P:\Work\DataBase-sql\TestDB2\obj\Release\TestDB2.pdb
