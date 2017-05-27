@@ -44,6 +44,22 @@ namespace TestDB2 {
             ConverterBase.Converter("DataBase\\Game\\MovementPoints.table", "0.1", "0.2");
             ConverterBase.Converter("DataBase\\Game\\Movements.table", "0.1", "0.2");*/
             /*
+            DataBase.Use("Game");
+            ResponseObject res = DataBase.Select("Parent");
+            if (res != null) {
+                res.Join("Child", "id", "id_parent");
+
+                while (res.NextIndex()) {
+                    System.Diagnostics.Debug.Print("Parent id: " + res.GetValue("id"));
+
+                    ResponseObject r = res.GetRowChildren("Child");
+                    while (r.NextIndex()) {
+                        System.Diagnostics.Debug.Print("Child name: " + r.GetValue("name"));
+                    }
+                }
+            }
+            */
+            /*
             ConverterBase.Converter("DataBase\\Game\\New.table", "0.1", "0.2");
             */
             /*
