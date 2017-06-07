@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace TestDB2 {
+namespace DataBaseSQL {
     public static class ColumnType {
         static public int INT = 0;
         static public int FLOAT = 1;

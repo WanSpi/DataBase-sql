@@ -1,4 +1,4 @@
-﻿namespace TestDB2 {
+﻿namespace DataBaseSQL {
     partial class CreateDataBaseForm {
         /// <summary>
         /// Required designer variable.

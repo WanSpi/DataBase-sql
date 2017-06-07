@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestDB2 {
+namespace DataBaseSQL {
     public static class ConverterBase {
         private static string VersionUp01(string path) {
             StreamReader sr = new StreamReader(path);

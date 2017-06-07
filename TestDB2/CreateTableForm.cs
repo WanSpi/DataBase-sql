@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TestDB2 {
+namespace DataBaseSQL {
     public partial class CreateTableForm : Form {
         public CreateTableForm() {
             InitializeComponent();
