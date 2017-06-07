@@ -734,15 +734,8 @@ namespace TestDB2 {
             DataBase.CreateTable(table, columns);
 
             if (res != null) {
-                string[] vals;
                 while (res.NextIndex()) {
-                    vals = new string[columns.Length];
-
-                    for (int i = 0; i != columns.Length; i++) {
-                        vals[i] = res.GetValue(columns[i].getName());
-                    }
-
-                    DataBase.Insert(table, vals, columns);
+                    DataBase.Insert(table, res.GetRow().ToString(), columns);
                 }
             }
 
