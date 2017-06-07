@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBase-sql", "TestDB2\DataBase-sql.csproj", "{F876FDE0-59A7-45A3-98AE-F7E6F1F884EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBase-sql", "DataBase-sql\DataBase-sql.csproj", "{F876FDE0-59A7-45A3-98AE-F7E6F1F884EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TestDB2 {
+namespace DataBaseSQL {
     public partial class Form1 : Form {
         public Form1() {
             InitializeComponent();
@@ -35,7 +35,17 @@ namespace TestDB2 {
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
             resize();
+            /*
+            DataBase.Use("Game");
 
+            Column[] cols = DataBase.GetColumns("AnimationData");
+            for (int i = 0; i != cols.Length; i++) {
+                if (cols[i].getName() == "name") {
+                    cols[i] = new Column(cols[i].getName(), cols[i].getType(), 32);
+                }
+            }
+            DataBase.ChangeColumns("AnimationData", cols);
+            */
             /*ConverterBase.Converter("DataBase\\Game\\AnimationData.table", "0.1", "0.2");
             ConverterBase.Converter("DataBase\\Game\\Animations.table", "0.1", "0.2");
             ConverterBase.Converter("DataBase\\Game\\CharacteristicAttack.table", "0.1", "0.2");
