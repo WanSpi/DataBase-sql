@@ -833,7 +833,7 @@ namespace DataBaseSQL {
                 bits = getBits(cols[i]);
 
                 switch (cols[i].Type) {
-                    case ColumnType.INT: // int
+                    case ColumnType.INT:
                         int bufInt = values[i].Length == 0 ? 0 : Convert.ToInt32(values[i]);
                         if (bufInt < 0) {
                             stringBuf = "1";
@@ -843,7 +843,7 @@ namespace DataBaseSQL {
                         }
                         stringBuf += encodeInteger(bufInt, bits - 1);
                         break;
-                    case ColumnType.FLOAT: // float
+                    case ColumnType.FLOAT:
                         values[i] = values[i].Replace(',', '.');
                         float bufFloat = Convert.ToSingle(values[i], System.Globalization.CultureInfo.InvariantCulture);
                         
@@ -854,14 +854,14 @@ namespace DataBaseSQL {
                         }
 
                         break;
-                    case ColumnType.TEXT: // text
+                    case ColumnType.TEXT:
                         stringBuf = encodeInteger(values[i], bits);
                         break;
-                    case ColumnType.BOOLEAN: // bolean
+                    case ColumnType.BOOLEAN:
                         stringBuf = values[i];
                         break;
-                    case ColumnType.CHAR: // char
-                    case ColumnType.VARCHAR: // varchar
+                    case ColumnType.CHAR:
+                    case ColumnType.VARCHAR:
                         stringBuf = "";
                         for (int j = 0; j != values[i].Length; j++) {
                             stringBuf += encodeInteger(((int)values[i][j]).ToString(), 8);
@@ -874,13 +874,13 @@ namespace DataBaseSQL {
                             stringBuf = stringBuf.Substring(stringBuf.Length - bits);
                         }
                         break;
-                    case ColumnType.TIME: // time (11) (hh:ii) (5, 6)
+                    case ColumnType.TIME: // (11) (hh:ii) (5, 6)
                         date = new DateObject(values[i], "hh:ii");
                         stringBuf =
                             DataBase.encodeInteger(date.GetHour(), 5) +
                             DataBase.encodeInteger(date.GetMinute(), 6);
                         break;
-                    case ColumnType.DATE: // date (33) (dd.mm.yyyy) (5, 4, 24)
+                    case ColumnType.DATE: // (33) (dd.mm.yyyy) (5, 4, 24)
                         date = new DateObject(values[i]);
                         stringBuf =
                             DataBase.encodeInteger(date.GetDay(), 5) +
