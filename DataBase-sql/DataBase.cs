@@ -7,39 +7,59 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DataBaseSQL {
-    public static class ColumnType {
-        static public int INT = 0;
-        static public int FLOAT = 1;
-        static public int CHAR = 2;
-        static public int VARCHAR = 3;
-        static public int BOOLEAN = 4;
-        static public int TEXT = 5;
-        static public int DATE = 6;
-        static public int TIME = 7;
-        static public int DATETIME = 8;
+    public enum ColumnType {
+        INT = 0,
+        FLOAT = 1,
+        CHAR = 2,
+        VARCHAR = 3,
+        BOOLEAN = 4,
+        TEXT = 5,
+        DATE = 6,
+        TIME = 7,
+        DATETIME = 8
+    }
+    public static class Extensions {
+        /*public static ColumnType ToEnum(this int v) {
+            return (ColumnType)v;
+        }*/
+        public static T ToEnum<T>(this int v) {
+            return (T)Enum.ToObject(typeof(T), v);
+        }
+        public static T ToEnum<T>(this string v) {
+            return (T)Enum.Parse(typeof(T), v, true);
+        }
     }
     public class Column {
         private string n, dv;
-        private int t, l;
+        private int l;
+        private ColumnType t;
 
-        public Column(string name, int type, int length = 8, string defValue = "") {
+        public Column(string name, ColumnType type, int length = 8, string defValue = "") {
             n = name;
             t = type;
             l = length;
             dv = defValue;
         }
 
-        public string getName() {
-            return n;
+        public string Name {
+            get {
+                return n;
+            }
         }
-        public string getDefValue() {
-            return dv;
+        public string DefValue {
+            get {
+                return dv;
+            }
         }
-        public int getType() {
-            return t;
+        public ColumnType Type {
+            get {
+                return t;
+            }
         }
-        public int getLength() {
-            return l;
+        public int Length {
+            get {
+                return l;
+            }
         }
     }
     public class DateObject {
@@ -231,7 +251,7 @@ namespace DataBaseSQL {
                     return value.Substring(1, value.Length - 2);
                 } else {
                     for (int i = 0; i != cols.Length; i++) {
-                        if (cols[i].getName() == value) {
+                        if (cols[i].Name == value) {
                             return row[i];
                         }
                     }
@@ -415,7 +435,7 @@ namespace DataBaseSQL {
 
         private int getIndex(string name) {
             for (int i = 0; i != cols.Length; i++) {
-                if (cols[i].getName() == name) {
+                if (cols[i].Name == name) {
                     return i;
                 }
             }
@@ -707,10 +727,10 @@ namespace DataBaseSQL {
             DataBase.sw.WriteLine(version + ":" + columns.Length);
             for (int i = 0; i != columns.Length; i++) {
                 DataBase.sw.WriteLine(
-                    columns[i].getName() + ":" +
-                    columns[i].getType() + ":" +
-                    columns[i].getLength() + ":" +
-                    columns[i].getDefValue()
+                    columns[i].Name + ":" +
+                    (int)columns[i].Type + ":" +
+                    columns[i].Length + ":" +
+                    columns[i].DefValue
                 );
             }
         }
@@ -743,24 +763,24 @@ namespace DataBaseSQL {
         }
 
         private static int getBits(Column col) {
-            switch (col.getType()) {
-                case 0: // int
-                    return col.getLength();
-                case 1: // float
+            switch (col.Type) {
+                case ColumnType.INT:
+                    return col.Length;
+                case ColumnType.FLOAT:
                     return 32;
-                case 2: // char
+                case ColumnType.CHAR:
                     return 8;
-                case 3: // varchar
-                    return col.getLength() * 8;
-                case 4: // boolean
+                case ColumnType.VARCHAR:
+                    return col.Length * 8;
+                case ColumnType.BOOLEAN:
                     return 1;
-                case 5: // text
+                case ColumnType.TEXT:
                     return 24;
-                case 6: // date
+                case ColumnType.DATE:
                     return 33; // (yyyy-mm-dd) (24, 4, 5)
-                case 7: // time
+                case ColumnType.TIME:
                     return 11; // (hh:mm) (5, 6)
-                case 8: // datetime
+                case ColumnType.DATETIME:
                     return 44;
                 default:
                     return 0;
@@ -812,8 +832,8 @@ namespace DataBaseSQL {
                 stringBuf = "";
                 bits = getBits(cols[i]);
 
-                switch (cols[i].getType()) {
-                    case 0: // int
+                switch (cols[i].Type) {
+                    case ColumnType.INT: // int
                         int bufInt = values[i].Length == 0 ? 0 : Convert.ToInt32(values[i]);
                         if (bufInt < 0) {
                             stringBuf = "1";
@@ -823,7 +843,7 @@ namespace DataBaseSQL {
                         }
                         stringBuf += encodeInteger(bufInt, bits - 1);
                         break;
-                    case 1: // float
+                    case ColumnType.FLOAT: // float
                         values[i] = values[i].Replace(',', '.');
                         float bufFloat = Convert.ToSingle(values[i], System.Globalization.CultureInfo.InvariantCulture);
                         
@@ -834,14 +854,14 @@ namespace DataBaseSQL {
                         }
 
                         break;
-                    case 5: // text
+                    case ColumnType.TEXT: // text
                         stringBuf = encodeInteger(values[i], bits);
                         break;
-                    case 4: // bolean
+                    case ColumnType.BOOLEAN: // bolean
                         stringBuf = values[i];
                         break;
-                    case 2: // char
-                    case 3: // varchar
+                    case ColumnType.CHAR: // char
+                    case ColumnType.VARCHAR: // varchar
                         stringBuf = "";
                         for (int j = 0; j != values[i].Length; j++) {
                             stringBuf += encodeInteger(((int)values[i][j]).ToString(), 8);
@@ -854,13 +874,13 @@ namespace DataBaseSQL {
                             stringBuf = stringBuf.Substring(stringBuf.Length - bits);
                         }
                         break;
-                    case 7: // time (11) (hh:ii) (5, 6)
+                    case ColumnType.TIME: // time (11) (hh:ii) (5, 6)
                         date = new DateObject(values[i], "hh:ii");
                         stringBuf =
                             DataBase.encodeInteger(date.GetHour(), 5) +
                             DataBase.encodeInteger(date.GetMinute(), 6);
                         break;
-                    case 6: // date (33) (dd.mm.yyyy) (5, 4, 24)
+                    case ColumnType.DATE: // date (33) (dd.mm.yyyy) (5, 4, 24)
                         date = new DateObject(values[i]);
                         stringBuf =
                             DataBase.encodeInteger(date.GetDay(), 5) +
@@ -919,8 +939,8 @@ namespace DataBaseSQL {
         static private string bitsToString(string data, Column col) {
             int bufInt;
             DateObject date;
-            switch (col.getType()) {
-                case 0: // int
+            switch (col.Type) {
+                case ColumnType.INT:
                     char op = data[0];
                     bufInt = bitsToInteger(data.Substring(1));
 
@@ -930,7 +950,7 @@ namespace DataBaseSQL {
 
                     data = bufInt.ToString();
                     break;
-                case 1: // float
+                case ColumnType.FLOAT:
                     byte[] bufByte = new byte[4];
                     for (int i = 0; i != bufByte.Length; i++) {
                         bufByte[i] = (byte)bitsToInteger(data.Substring(i * 8, 8));
@@ -940,11 +960,11 @@ namespace DataBaseSQL {
                     data = bufFloat.ToString();
 
                     break;
-                case 5: // text
+                case ColumnType.TEXT:
                     data = bitsToInteger(data).ToString();
                     break;
-                case 2: // char
-                case 3: // varchar
+                case ColumnType.CHAR:
+                case ColumnType.VARCHAR:
                     int bytes = data.Length / 8;
                     string varchar = "";
                     for (int i = bytes - 1; i != -1; i--) {
@@ -967,7 +987,7 @@ namespace DataBaseSQL {
                     
                     data = varchar;
                     break;
-                case 7: // time (11) (hh:ii) (5, 6)
+                case ColumnType.TIME: // (11) (hh:ii) (5, 6)
                     date = new DateObject(
                         fixStringNumber(bitsToInteger(data.Substring(0, 5)).ToString(), 2) +
                         fixStringNumber(bitsToInteger(data.Substring(5, 6)).ToString(), 2),
@@ -975,7 +995,7 @@ namespace DataBaseSQL {
                     );
                     data = date.GetDate("hh:ii");
                     break;
-                case 6: // date (33) (dd.mm.yyyy) (5, 4, 24)
+                case ColumnType.DATE: // (33) (dd.mm.yyyy) (5, 4, 24)
                     date = new DateObject(
                         fixStringNumber(bitsToInteger(data.Substring(0, 5)).ToString(), 2) +
                         fixStringNumber(bitsToInteger(data.Substring(5, 4)).ToString(), 2) +
@@ -1034,7 +1054,7 @@ namespace DataBaseSQL {
 
                 for (int i = 0; i != cols.Length; i++) {
                     sb = DataBase.sr.ReadLine().Split(new char[] { ':' });
-                    cols[i] = new Column(sb[0], Convert.ToInt32(sb[1]), Convert.ToInt32(sb[2]), sb[3]);
+                    cols[i] = new Column(sb[0], sb[1].ToEnum<ColumnType>(), Convert.ToInt32(sb[2]), sb[3]);
                 }
 
                 return cols;
@@ -1114,7 +1134,7 @@ namespace DataBaseSQL {
         static private void update(string[] oldValues, string[,] newValues, Column[] cols) {
             for (int i = 0; i != cols.Length; i++) {
                 for (int j = 0; j != newValues.GetLength(0); j++) {
-                    if (cols[i].getName() == newValues[j, 0]) {
+                    if (cols[i].Name == newValues[j, 0]) {
                         oldValues[i] = newValues[j, 1];
                         break;
                     }

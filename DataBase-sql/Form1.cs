@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -36,15 +37,46 @@ namespace DataBaseSQL {
             DataBaseTree_Reload();
             resize();
             /*
+            StreamReader sr = new StreamReader("a.txt");
             DataBase.Use("Game");
 
-            Column[] cols = DataBase.GetColumns("AnimationData");
+            DataBase.CreateTable("MapCells", new Column[] {
+                new Column("id", ColumnType.INT, 16),
+                new Column("id_map", ColumnType.INT),
+                new Column("position_x", ColumnType.INT),
+                new Column("position_y", ColumnType.INT),
+                new Column("id_cell", ColumnType.INT)
+            });
+
+            int y = 1, id = 1;
+            string buf = "";
+            while (!sr.EndOfStream) {
+                buf = sr.ReadLine();
+                for (int x = 0; x != buf.Length; x++) {
+                    DataBase.Insert("MapCells", new string[] {
+                        (id++).ToString(),
+                        "1",
+                        (x + 1).ToString(),
+                        y.ToString(),
+                        buf[x].ToString()
+                    });
+                }
+
+                y++;
+            }
+
+            this.Close();*/
+
+            /*
+            DataBase.Use("Game");
+
+            Column[] cols = DataBase.GetColumns("AnimationFrame");
             for (int i = 0; i != cols.Length; i++) {
-                if (cols[i].getName() == "name") {
-                    cols[i] = new Column(cols[i].getName(), cols[i].getType(), 32);
+                if (cols[i].getName() == "id") {
+                    cols[i] = new Column(cols[i].getName(), cols[i].getType(), 16);
                 }
             }
-            DataBase.ChangeColumns("AnimationData", cols);
+            DataBase.ChangeColumns("AnimationFrame", cols);
             */
             /*ConverterBase.Converter("DataBase\\Game\\AnimationData.table", "0.1", "0.2");
             ConverterBase.Converter("DataBase\\Game\\Animations.table", "0.1", "0.2");
@@ -152,7 +184,7 @@ namespace DataBaseSQL {
                     grid.Dock = System.Windows.Forms.DockStyle.Fill;
                     tp.Controls.Add(grid);
                     for (int i = 0; i != cols.Length; i++) {
-                        grid.Columns.Add(i.ToString(), cols[i].getName());
+                        grid.Columns.Add(i.ToString(), cols[i].Name);
                     }
 
                     ResponseObject res = DataBase.Select(tn.Text);
@@ -163,7 +195,7 @@ namespace DataBaseSQL {
                         while (res.SetIndex(ind++)) {
                             grid.Rows.Add();
                             for (int i = 0; i != cols.Length; i++) {
-                                grid[i, ind - 1].Value = res.GetValue(cols[i].getName());
+                                grid[i, ind - 1].Value = res.GetValue(cols[i].Name);
                             }
                         }
                     }

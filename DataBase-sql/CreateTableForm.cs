@@ -88,7 +88,8 @@ namespace DataBaseSQL {
                 if (lengths[i].Text == "") {
                     lengths[i].Text = "8";
                 }
-                cols[i] = new Column(names[i].Text, comboTypes[i].SelectedIndex, Convert.ToInt32(lengths[i].Text), defaults[i].Text);
+                
+                cols[i] = new Column(names[i].Text, comboTypes[i].SelectedIndex.ToEnum<ColumnType>(), Convert.ToInt32(lengths[i].Text), defaults[i].Text);
             }
 
             DataBase.Use(baseNames[comboBoxBaseName.SelectedIndex]);
