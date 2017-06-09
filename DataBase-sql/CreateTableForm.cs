@@ -14,18 +14,6 @@ namespace DataBaseSQL {
             InitializeComponent();
         }
 
-        private string[] types = new string[] {
-            "INT",
-            "FLOAT",
-            "CHAR",
-            "VARCHAR",
-            "BOOLEAN",
-            "TEXT",
-            "DATE",
-            "TIME",
-            "DATETIME"
-        };
-
         private List<TextBox> names = new List<TextBox>();
         private List<ComboBox> comboTypes = new List<ComboBox>();
         private List<TextBox> lengths = new List<TextBox>();
@@ -41,9 +29,10 @@ namespace DataBaseSQL {
                     combo.Width = width;
                     combo.Location = new Point(borderSize + i * (width + borderSize / 2), this.Height - borderSize * 2);
 
-                    for (int j = 0; j != types.Length; j++) {
-                        combo.Items.Add(types[j]);
+                    foreach(ColumnType ct in Enum.GetValues(typeof(ColumnType))) {
+                        combo.Items.Add(ct);
                     }
+                    
                     combo.SelectedIndex = 0;
 
                     this.Controls.Add(combo);
@@ -95,7 +84,7 @@ namespace DataBaseSQL {
             DataBase.Use(baseNames[comboBoxBaseName.SelectedIndex]);
             DataBase.CreateTable(textBoxTableName.Text, cols);
 
-            Form1 main = this.Owner as Form1;
+            MainForm main = this.Owner as MainForm;
             if (main != null) {
                 main.DataBaseTree_Reload();
             }

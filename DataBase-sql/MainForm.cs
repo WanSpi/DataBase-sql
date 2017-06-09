@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace DataBaseSQL {
-    public partial class Form1 : Form {
-        public Form1() {
+    public partial class MainForm : Form {
+        public MainForm() {
             InitializeComponent();
         }
 
@@ -36,6 +36,8 @@ namespace DataBaseSQL {
         private void Form1_Load(object sender, EventArgs e) {
             DataBaseTree_Reload();
             resize();
+
+            new DateObject("09.06.2017");
             /*
             StreamReader sr = new StreamReader("a.txt");
             DataBase.Use("Game");
@@ -188,7 +190,7 @@ namespace DataBaseSQL {
                     }
 
                     ResponseObject res = DataBase.Select(tn.Text);
-                    //List<string[]> list = DataBase.Select(tn.Text);
+                    
                     if (res != null) {
                         int ind = 0;
 
@@ -242,9 +244,19 @@ namespace DataBaseSQL {
         }
 
         private void tabControl_MouseClick(object sender, MouseEventArgs e) {
-            Debug.Print(sender.ToString());
+            if (e.Button != MouseButtons.Middle) {
+                return;
+            }
 
-            Debug.Print(e.Location.ToString());
+            Rectangle rect;
+            for (int i = 0; i != tabControl.TabCount; i++) {
+                rect = tabControl.GetTabRect(i);
+
+                if (rect.Left <= e.Location.X && e.Location.X <= rect.Right) {
+                    tabControl.TabPages.RemoveAt(i);
+                    return;
+                }
+            }
         }
 
         private int formWidth = 0;
@@ -269,6 +281,33 @@ namespace DataBaseSQL {
 
         private void toolStripContainer1_ContentPanel_Resize(object sender, EventArgs e) {
             resize();
+        }
+
+        private void DataBaseTree_MouseClick(object sender, MouseEventArgs e) {
+            if (e.Button != MouseButtons.Right) {
+                return;
+            }
+
+            DataBaseTree.SelectedNode = DataBaseTree.GetNodeAt(e.X, e.Y);
+            contextMenuTables.Show(Cursor.Position.X, Cursor.Position.Y);
+        }
+
+        private void deleteTableToolStripMenuItem_Click(object sender, EventArgs e) {
+            TreeNode tn = DataBaseTree.SelectedNode;
+            TreeNode ptn = tn.Parent;
+
+            if (ptn != null) {
+                DataBase.Use(ptn.Text);
+
+                if (DataBase.ExistTable(tn.Text)) {
+                    DataBase.RemoveTable(tn.Text);
+                    DataBaseTree_Reload();
+                }
+            }
+        }
+
+        private void changeColumnsToolStripMenuItem_Click(object sender, EventArgs e) {
+
         }
     }
 }

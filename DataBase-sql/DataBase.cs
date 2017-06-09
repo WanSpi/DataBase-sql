@@ -19,9 +19,6 @@ namespace DataBaseSQL {
         DATETIME = 8
     }
     public static class Extensions {
-        /*public static ColumnType ToEnum(this int v) {
-            return (ColumnType)v;
-        }*/
         public static T ToEnum<T>(this int v) {
             return (T)Enum.ToObject(typeof(T), v);
         }
@@ -65,6 +62,13 @@ namespace DataBaseSQL {
     public class DateObject {
         private int h = 0, i = 0;
         private int d = 0, m = 0, y = 0;
+        private static Regex[] formats = new Regex[] {
+            new Regex(@"([0-3]?[0-9])\.([0-1]?[0-9])\.([0-9]{4})"), // DD.MM.YYYY
+            new Regex(@"([0-3]?[0-9])\-([0-1]?[0-9])\-([0-9]{4})"), // DD-MM-YYYY
+            new Regex(@"([0-3]?[0-9])\/([0-1]?[0-9])\/([0-9]{4})"), // DD/MM/YYYY
+            new Regex(@"([0-1]?[0-9])\-([0-3]?[0-9])\-([0-9]{4})"), // MM-DD-YYYY
+            new Regex(@"([0-9]{4})\-([0-1]?[0-9])\-([0-3]?[0-9])") // YYYY-MM-DD
+        };
 
         private void setValue(string value, char f) {
             switch (f) {
@@ -75,17 +79,29 @@ namespace DataBaseSQL {
                 case 'i': i = Convert.ToInt32(value); break;
             }
         }
-        public DateObject(string date, string format = "dd.mm.yyyy") {
-            string buf = date[0].ToString();
+        public DateObject(string date, string format = null/* "dd.mm.yyyy" */) {
+            if (format == null) {
+                Match match = null;
 
-            for (int i = 1; i != format.Length; i++) {
-                if (format[i] != format[i - 1]) {
-                    setValue(buf, format[i - 1]);
-                    buf = "";
+                for (int i = 0; i != formats.Length; i++) {
+                    match = formats[i].Match(date);
+
+                    if (match.Success) {
+
+                    }
                 }
-                buf += date[i];
+            } else {
+                string buf = date[0].ToString();
+
+                for (int i = 1; i != format.Length; i++) {
+                    if (format[i] != format[i - 1]) {
+                        setValue(buf, format[i - 1]);
+                        buf = "";
+                    }
+                    buf += date[i];
+                }
+                setValue(buf, format[format.Length - 1]);
             }
-            setValue(buf, format[format.Length - 1]);
         }
 
         private string formatValue(int len, int f) {
@@ -136,20 +152,34 @@ namespace DataBaseSQL {
             return date;
         }
 
-        public int GetDay() {
-            return d;
+        public string ToString() {
+            return GetDate();
         }
-        public int GetMonth() {
-            return m;
+
+        public int Day {
+            get {
+                return d;
+            }
         }
-        public int GetYear() {
-            return y;
+        public int Month {
+            get {
+                return m;
+            }
         }
-        public int GetHour() {
-            return h;
+        public int Year {
+            get {
+                return y;
+            }
         }
-        public int GetMinute() {
-            return i;
+        public int Hour {
+            get {
+                return h;
+            }
+        }
+        public int Minute {
+            get {
+                return i;
+            }
         }
     }
     public class RequestLimit {
@@ -780,7 +810,7 @@ namespace DataBaseSQL {
                     return 33; // (yyyy-mm-dd) (24, 4, 5)
                 case ColumnType.TIME:
                     return 11; // (hh:mm) (5, 6)
-                case ColumnType.DATETIME:
+                case ColumnType.DATETIME: // (yyyy-mm-dd hh:mm) (24, 4, 5, 5, 6)
                     return 44;
                 default:
                     return 0;
@@ -795,6 +825,12 @@ namespace DataBaseSQL {
                 return false;
             } else if (!DataBase.ExistTable(table)) {
                 return false; // DataBase is not found
+            }
+
+            for (int i = 0; i != values.Length; i++) {
+                if (values[i] == "" || values[i] == null) {
+                    values[i] = cols[i].DefValue;
+                }
             }
 
             StreamWriter sw = new StreamWriter(DataBase.getPath(table), true);
@@ -877,15 +913,24 @@ namespace DataBaseSQL {
                     case ColumnType.TIME: // (11) (hh:ii) (5, 6)
                         date = new DateObject(values[i], "hh:ii");
                         stringBuf =
-                            DataBase.encodeInteger(date.GetHour(), 5) +
-                            DataBase.encodeInteger(date.GetMinute(), 6);
+                            DataBase.encodeInteger(date.Hour, 5) +
+                            DataBase.encodeInteger(date.Minute, 6);
                         break;
                     case ColumnType.DATE: // (33) (dd.mm.yyyy) (5, 4, 24)
                         date = new DateObject(values[i]);
                         stringBuf =
-                            DataBase.encodeInteger(date.GetDay(), 5) +
-                            DataBase.encodeInteger(date.GetMonth(), 4) +
-                            DataBase.encodeInteger(date.GetYear(), 24);
+                            DataBase.encodeInteger(date.Day, 5) +
+                            DataBase.encodeInteger(date.Month, 4) +
+                            DataBase.encodeInteger(date.Year, 24);
+                        break;
+                    case ColumnType.DATETIME:  // (yyyy-mm-dd hh:mm) (24, 4, 5, 5, 6)
+                        date = new DateObject(values[i]);
+                        stringBuf =
+                            DataBase.encodeInteger(date.Day, 5) +
+                            DataBase.encodeInteger(date.Month, 4) +
+                            DataBase.encodeInteger(date.Year, 24) +
+                            DataBase.encodeInteger(date.Hour, 5) +
+                            DataBase.encodeInteger(date.Minute, 6);
                         break;
                 }
 
@@ -1095,7 +1140,7 @@ namespace DataBaseSQL {
                 bits += DataBase.getBits(cols[i]);
             }
             bits += bits % 8;
-            List<string> l = breakRows(dataLine, bits / 8);// (from Match m in Regex.Matches(dataLine, @".{" + (bits / 8) + "}") select m.Value).ToList();
+            List<string> l = breakRows(dataLine, bits / 8);
 
             for (int i = 0; i != l.Count; i++) {
                 buf = new ResponseRow(cols, DataBase.rowDecode(l[i], cols));

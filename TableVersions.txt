@@ -1,0 +1,21 @@
+v.0.1
+
+0.1:[Column count]
+[Column name]:[type]:[bits length]:[default value]\n
+[date row]\n
+
+----------------------------------------------------------
+
+v.0.2
+
+0.2:[Column count]
+[Column name]:[type]:[bits length]:[default value]\n
+[date row]
+
+----------------------------------------------------------
+
+v.0.3
+
+0.3:[Column count]:[Auto increment (column id)]
+[Column name]:[type]:[bits length]:[default value]\n
+[date row]

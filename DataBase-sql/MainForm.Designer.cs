@@ -1,5 +1,5 @@
 ﻿namespace DataBaseSQL {
-    partial class Form1 {
+    partial class MainForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -24,7 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.SaveTableButton = new System.Windows.Forms.Button();
             this.tabControl = new System.Windows.Forms.TabControl();
@@ -33,10 +33,14 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.buttonAddDataBase = new System.Windows.Forms.ToolStripButton();
             this.buttonAddTable = new System.Windows.Forms.ToolStripButton();
+            this.contextMenuTables = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.changeColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.contextMenuTables.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripContainer1
@@ -88,6 +92,7 @@
             this.DataBaseTree.SelectedImageIndex = 0;
             this.DataBaseTree.Size = new System.Drawing.Size(139, 406);
             this.DataBaseTree.TabIndex = 0;
+            this.DataBaseTree.MouseClick += new System.Windows.Forms.MouseEventHandler(this.DataBaseTree_MouseClick);
             this.DataBaseTree.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DataBaseTree_MouseDoubleClick);
             // 
             // imageList
@@ -131,14 +136,36 @@
             this.buttonAddTable.Text = "toolStripButton1";
             this.buttonAddTable.Click += new System.EventHandler(this.buttonAddTable_Click);
             // 
-            // Form1
+            // contextMenuTables
+            // 
+            this.contextMenuTables.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.changeColumnsToolStripMenuItem,
+            this.deleteTableToolStripMenuItem});
+            this.contextMenuTables.Name = "contextMenuTables";
+            this.contextMenuTables.Size = new System.Drawing.Size(165, 48);
+            // 
+            // changeColumnsToolStripMenuItem
+            // 
+            this.changeColumnsToolStripMenuItem.Name = "changeColumnsToolStripMenuItem";
+            this.changeColumnsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.changeColumnsToolStripMenuItem.Text = "Change columns";
+            this.changeColumnsToolStripMenuItem.Click += new System.EventHandler(this.changeColumnsToolStripMenuItem_Click);
+            // 
+            // deleteTableToolStripMenuItem
+            // 
+            this.deleteTableToolStripMenuItem.Name = "deleteTableToolStripMenuItem";
+            this.deleteTableToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.deleteTableToolStripMenuItem.Text = "Delete table";
+            this.deleteTableToolStripMenuItem.Click += new System.EventHandler(this.deleteTableToolStripMenuItem_Click);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(783, 434);
             this.Controls.Add(this.toolStripContainer1);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MainForm";
+            this.Text = "DataBase SQL";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
@@ -147,6 +174,7 @@
             this.toolStripContainer1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.contextMenuTables.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -161,6 +189,9 @@
         private System.Windows.Forms.ToolStripButton buttonAddDataBase;
         private System.Windows.Forms.Button SaveTableButton;
         private System.Windows.Forms.ToolStripButton buttonAddTable;
+        private System.Windows.Forms.ContextMenuStrip contextMenuTables;
+        private System.Windows.Forms.ToolStripMenuItem changeColumnsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteTableToolStripMenuItem;
     }
 }
 

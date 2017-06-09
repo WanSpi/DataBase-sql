@@ -17,7 +17,7 @@ namespace DataBaseSQL {
         private void buttonAdd_Click(object sender, EventArgs e) {
             DataBase.Create(textName.Text);
             
-            Form1 main = this.Owner as Form1;
+            MainForm main = this.Owner as MainForm;
             if (main != null) {
                 main.DataBaseTree_Reload();
             }
