@@ -59,8 +59,120 @@ namespace DataBaseSQL {
             }
         }
     }
+
+    public class TimeObject {
+        private int h = 0, i = 0, s = 0;
+        private static Regex[] formats = new Regex[] {
+            new Regex(@"([0-2]?[0-9])\:([0-6]?[0-9])"), // HH:II
+            new Regex(@"([0-2]?[0-9])\:([0-6]?[0-9])\:([0-6]?[0-9])") // HH:II:SS
+        };
+
+        private void setValue(string value, char f) {
+            switch (f) {
+                case 'h': h = Convert.ToInt32(value); break;
+                case 'i': i = Convert.ToInt32(value); break;
+                case 's': s = Convert.ToInt32(value); break;
+            }
+        }
+        public TimeObject(string time, string format = null) {
+            if (format == null) {
+                Match match = null;
+
+                for (int i = 0; i != formats.Length; i++) {
+                    match = formats[i].Match(time);
+
+                    if (match.Success) {
+
+                    }
+                }
+            } else {
+                string buf = time[0].ToString();
+
+                for (int i = 1; i != format.Length; i++) {
+                    if (format[i] != format[i - 1]) {
+                        setValue(buf, format[i - 1]);
+                        buf = "";
+                    }
+                    buf += time[i];
+                }
+                setValue(buf, format[format.Length - 1]);
+            }
+        }
+
+        private string formatValue(int len, int f) {
+            string data = f.ToString();
+
+            if (data.Length < len) {
+                while (data.Length < len) {
+                    data = '0' + data;
+                }
+            } else if (data.Length > len) {
+                data = data.Substring(data.Length - len);
+            }
+
+            return data;
+        }
+        private string formatValue(int len, string f) {
+            string data = "";
+
+            for (int i = 0; i != len; i++) {
+                data += f;
+            }
+
+            return data;
+        }
+        private string getValue(int len, char f) {
+            switch (f) {
+                case 'h': return formatValue(len, h);
+                case 'i': return formatValue(len, i);
+                case 's': return formatValue(len, s);
+                default: return formatValue(len, f.ToString());
+            }
+        }
+        public string GetTime(string format = "hh:ii:ss") {
+            string date = "";
+
+            int len = 1;
+            for (int i = 1; i != format.Length; i++) {
+                if (format[i] != format[i - 1]) {
+                    date += getValue(len, format[i - 1]);
+                    len = 0;
+                }
+                len++;
+            }
+            date += getValue(len, format[format.Length - 1]);
+
+            return date;
+        }
+
+        public string ToString() {
+            return this.GetTime();
+        }
+
+        public int Hour {
+            get { return h; }
+            set {
+                h = value;
+
+                if (h > 59) {
+                    h = h % 60;
+                } else if (h < 0) {
+
+                }
+            }
+        }
+        public int Minute {
+            get {
+                return i;
+            }
+        }
+        public int Seconds {
+            get {
+                return s;
+            }
+        }
+    }
     public class DateObject {
-        private int h = 0, i = 0;
         private int d = 0, m = 0, y = 0;
         private static Regex[] formats = new Regex[] {
             new Regex(@"([0-3]?[0-9])\.([0-1]?[0-9])\.([0-9]{4})"), // DD.MM.YYYY
@@ -75,11 +187,9 @@ namespace DataBaseSQL {
                 case 'd': d = Convert.ToInt32(value); break;
                 case 'm': m = Convert.ToInt32(value); break;
                 case 'y': y = Convert.ToInt32(value); break;
-                case 'h': h = Convert.ToInt32(value); break;
-                case 'i': i = Convert.ToInt32(value); break;
             }
         }
-        public DateObject(string date, string format = null/* "dd.mm.yyyy" */) {
+        public DateObject(string date, string format = null) {
             if (format == null) {
                 Match match = null;
 
@@ -119,7 +229,7 @@ namespace DataBaseSQL {
         }
         private string formatValue(int len, string f) {
             string data = "";
-            
+
             for (int i = 0; i != len; i++) {
                 data += f;
             }
@@ -131,8 +241,6 @@ namespace DataBaseSQL {
                 case 'd': return formatValue(len, d);
                 case 'm': return formatValue(len, m);
                 case 'y': return formatValue(len, y);
-                case 'h': return formatValue(len, h);
-                case 'i': return formatValue(len, i);
                 default: return formatValue(len, f.ToString());
             }
         }
@@ -171,17 +279,79 @@ namespace DataBaseSQL {
                 return y;
             }
         }
+    }
+    public class DateTimeObject {
+        private DateObject date = null;
+        private TimeObject time = null;
+
+        public DateTimeObject(string dateTime, string format = null) {
+            string dateFormat = null;
+            string timeFormat = null;
+
+            string dateString = "1900-01-01";
+            string timeString = "12:00:00";
+
+            string[] dateTimeSplit = dateTime.Split(' ');
+            string[] formatSplit = format.Split(' ');
+
+            dateString = dateTimeSplit[0];
+            if (dateTimeSplit.Length != 1) {
+                timeString = dateTimeSplit[1];
+            }
+
+            if (format != null) {
+                dateFormat = formatSplit[0];
+                if (formatSplit.Length != 1) {
+                    timeFormat = formatSplit[1];
+                }
+            }
+
+            date = new DateObject(dateString, dateFormat);
+            time = new TimeObject(timeString, timeFormat);
+        }
+        /*
+        public string GetTime() {
+        }
+        public string GetDate() {
+        }
+        public string GetDateTime() {
+        }*/
+       /* public string ToString() {
+            return GetDateTime();
+        }*/
+
+        public int Day {
+            get {
+                return this.date.Day;
+            }
+        }
+        public int Month {
+            get {
+                return this.date.Month;
+            }
+        }
+        public int Year {
+            get {
+                return this.date.Year;
+            }
+        }
         public int Hour {
             get {
-                return h;
+                return this.time.Hour;
             }
         }
         public int Minute {
             get {
-                return i;
+                return this.time.Minute;
+            }
+        }
+        public int Seconds {
+            get {
+                return this.time.Seconds;
             }
         }
     }
+
     public class RequestLimit {
         private int rows;
         private int offset;
@@ -862,7 +1032,6 @@ namespace DataBaseSQL {
 
             char[] data = new char[(int)Math.Ceiling(bits / 8F)];
 
-            DateObject date;
             string stringBuf, stringData = "";
             for (int i = 0; i != values.Length; i++) {
                 stringBuf = "";
@@ -911,26 +1080,26 @@ namespace DataBaseSQL {
                         }
                         break;
                     case ColumnType.TIME: // (11) (hh:ii) (5, 6)
-                        date = new DateObject(values[i], "hh:ii");
+                        TimeObject time = new TimeObject(values[i], "hh:ii");
                         stringBuf =
-                            DataBase.encodeInteger(date.Hour, 5) +
-                            DataBase.encodeInteger(date.Minute, 6);
+                            DataBase.encodeInteger(time.Hour, 5) +
+                            DataBase.encodeInteger(time.Minute, 6);
                         break;
                     case ColumnType.DATE: // (33) (dd.mm.yyyy) (5, 4, 24)
-                        date = new DateObject(values[i]);
+                        DateObject date = new DateObject(values[i]);
                         stringBuf =
                             DataBase.encodeInteger(date.Day, 5) +
                             DataBase.encodeInteger(date.Month, 4) +
                             DataBase.encodeInteger(date.Year, 24);
                         break;
                     case ColumnType.DATETIME:  // (yyyy-mm-dd hh:mm) (24, 4, 5, 5, 6)
-                        date = new DateObject(values[i]);
+                        DateTimeObject dateTime = new DateTimeObject(values[i]);
                         stringBuf =
-                            DataBase.encodeInteger(date.Day, 5) +
-                            DataBase.encodeInteger(date.Month, 4) +
-                            DataBase.encodeInteger(date.Year, 24) +
-                            DataBase.encodeInteger(date.Hour, 5) +
-                            DataBase.encodeInteger(date.Minute, 6);
+                            DataBase.encodeInteger(dateTime.Day, 5) +
+                            DataBase.encodeInteger(dateTime.Month, 4) +
+                            DataBase.encodeInteger(dateTime.Year, 24) +
+                            DataBase.encodeInteger(dateTime.Hour, 5) +
+                            DataBase.encodeInteger(dateTime.Minute, 6);
                         break;
                 }
 
