@@ -16,6 +16,6 @@ v.0.2
 
 v.0.3
 
-0.3:[Column count]:[Auto increment (column id)]
+0.3:[Column count]:[Primary Key]:[Auto increment]
 [Column name]:[type]:[bits length]:[default value]\n
 [date row]
