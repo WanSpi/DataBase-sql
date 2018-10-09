@@ -1258,9 +1258,18 @@ namespace DataBaseSQL {
         static private string getPath(string table) {
             return "DataBase\\" + db + "\\" + table + ".table";
         }
+        static private Dictionary<string, Dictionary<string, Column[]>> columnCache = new Dictionary<string, Dictionary<string, Column[]>>();
         static private Column[] getColumns(string table) {
             if (!DataBase.ExistTable(table)) {
                 return null;
+            }
+
+            if (!columnCache.ContainsKey(db)) {
+              columnCache[db] = new Dictionary<string, Column[]>();
+            }
+
+            if (columnCache[db].ContainsKey(table)) {
+              return columnCache[db][table];
             }
 
             DataBase.sr = new StreamReader(DataBase.getPath(table));
@@ -1276,8 +1285,10 @@ namespace DataBaseSQL {
                     cols[i] = new Column(sb[0], sb[1].ToEnum<ColumnType>(), Convert.ToInt32(sb[2]), sb[3]);
                 }
 
+                columnCache[db][table] = cols;
                 return cols;
             } else {
+                columnCache[db][table] = null;
                 return null;
             }
         }
