@@ -865,15 +865,15 @@ namespace DataBaseSQL {
         }
     }
     public static class DataBase {
-        static private string version = "0.2";
-        static private string db = null;
+        private static string version = "0.2";
+        private static string db = null;
 
-        static public string DataBaseName {
+        public static string DataBaseName {
             get {
                 return db;
             }
         }
-        static public bool Use(string name) {
+        public static bool Use(string name) {
             if (Directory.Exists("DataBase\\" + name)) {
                 db = name;
                 return true;
@@ -882,7 +882,7 @@ namespace DataBaseSQL {
             }
         }
 
-        static public string[] GetDataBases() {
+        public static string[] GetDataBases() {
             string[] sts = Directory.GetDirectories("DataBase");
 
             for (int i = 0; i != sts.Length; i++) {
@@ -892,7 +892,7 @@ namespace DataBaseSQL {
             return sts;
         }
 
-        static public bool Create(string name) {
+        public static bool Create(string name) {
             name = "DataBase/" + name;
 
             if (!Directory.Exists(name)) {
@@ -903,11 +903,11 @@ namespace DataBaseSQL {
             }
         }
 
-        static public bool ExistTable(string table) {
+        public static bool ExistTable(string table) {
             return File.Exists("DataBase\\" + db + "\\" + table + ".table");
         }
 
-        static public string[] GetTables() {
+        public static string[] GetTables() {
             string[] sts = Directory.GetFiles("DataBase\\" + db, "*.table");
 
             for (int i = 0; i != sts.Length; i++) {
@@ -917,7 +917,7 @@ namespace DataBaseSQL {
 
             return sts;
         }
-        static public bool RemoveTable(string table) {
+        public static bool RemoveTable(string table) {
             if (DataBase.ExistTable(table)) {
                 File.Delete(DataBase.getPath(table));
 
@@ -927,7 +927,7 @@ namespace DataBaseSQL {
             }
         }
 
-        static private void createTable(string table, Column[] columns) {
+        private static void createTable(string table, Column[] columns) {
             DataBase.sw = new StreamWriter(DataBase.getPath(table), false);
             DataBase.sw.WriteLine(version + ":" + columns.Length);
             for (int i = 0; i != columns.Length; i++) {
@@ -939,7 +939,7 @@ namespace DataBaseSQL {
                 );
             }
         }
-        static public bool CreateTable(string table, Column[] columns) {
+        public static bool CreateTable(string table, Column[] columns) {
             if (DataBase.ExistTable(table)) {
                 return false;
             }
@@ -949,7 +949,7 @@ namespace DataBaseSQL {
 
             return true;
         }
-        static public bool ChangeColumns(string table, Column[] columns) {
+        public static bool ChangeColumns(string table, Column[] columns) {
             if (!DataBase.ExistTable(table)) {
                 return false;
             }
@@ -1016,7 +1016,7 @@ namespace DataBaseSQL {
             sw.Close();
             return true;
         }
-        static private string encodeInteger(int integer, int bits) {
+        private static string encodeInteger(int integer, int bits) {
             string data = "";
 
             for (int j = 0; j != bits; j++) {
@@ -1026,10 +1026,10 @@ namespace DataBaseSQL {
 
             return data;
         }
-        static private string encodeInteger(string integer, int bits) {
+        private static string encodeInteger(string integer, int bits) {
             return encodeInteger(Convert.ToInt32(integer), bits);
         }
-        static private char[] rowEncode(string[] values, Column[] cols) {
+        private static char[] rowEncode(string[] values, Column[] cols) {
             int bits = 0;
             for (int i = 0; i != cols.Length; i++) {
                 bits += getBits(cols[i]);
@@ -1132,7 +1132,7 @@ namespace DataBaseSQL {
 
             return data;
         }
-        static private string fixStringNumber(string num, int len) {
+        private static string fixStringNumber(string num, int len) {
             if (num.Length > len) {
                 num = num.Substring(num.Length - len);
             } else if (num.Length < len) {
@@ -1143,7 +1143,7 @@ namespace DataBaseSQL {
 
             return num;
         }
-        static private int bitsToInteger(string data) {
+        private static int bitsToInteger(string data) {
             int num = 0;
 
             for (int i = 0; i != data.Length; i++) {
@@ -1155,7 +1155,7 @@ namespace DataBaseSQL {
 
             return num;
         }
-        static private string bitsToString(string data, Column col) {
+        private static string bitsToString(string data, Column col) {
             int bufInt;
             DateObject date;
             switch (col.Type) {
@@ -1227,7 +1227,7 @@ namespace DataBaseSQL {
 
             return data;
         }
-        static private string[] rowDecode(string row, Column[] cols) {
+        private static string[] rowDecode(string row, Column[] cols) {
             string[] data = new string[cols.Length];
 
             string rowBit = ""; char al;
@@ -1253,13 +1253,13 @@ namespace DataBaseSQL {
             return data;
         }
 
-        static private StreamWriter sw = null;
-        static private StreamReader sr = null;
-        static private string getPath(string table) {
+        private static StreamWriter sw = null;
+        private static StreamReader sr = null;
+        private static string getPath(string table) {
             return "DataBase\\" + db + "\\" + table + ".table";
         }
-        static private Dictionary<string, Dictionary<string, Column[]>> columnCache = new Dictionary<string, Dictionary<string, Column[]>>();
-        static private Column[] getColumns(string table) {
+        private static Dictionary<string, Dictionary<string, Column[]>> columnCache = new Dictionary<string, Dictionary<string, Column[]>>();
+        private static Column[] getColumns(string table) {
             if (!DataBase.ExistTable(table)) {
                 return null;
             }
@@ -1308,7 +1308,7 @@ namespace DataBaseSQL {
 
             return rows;
         }
-        static private List<ResponseRow> select(string table, Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+        private static List<ResponseRow> select(string table, Column[] cols, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             List<ResponseRow> data = new List<ResponseRow>();
 
             int id = 1;
@@ -1351,7 +1351,7 @@ namespace DataBaseSQL {
             DataBase.sr.Close();
             return data;
         }
-        static public ResponseObject Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
+        public static ResponseObject Select(string table, RequestWhere where = null, RequestOrder order = null, RequestLimit limit = null) {
             Column[] cols = DataBase.getColumns(table);
             List<ResponseRow> list = DataBase.select(table, cols, where, order, limit);
 
@@ -1361,7 +1361,7 @@ namespace DataBaseSQL {
 
             return new ResponseObject(cols, list);
         }
-        static private void update(string[] oldValues, string[,] newValues, Column[] cols) {
+        private static void update(string[] oldValues, string[,] newValues, Column[] cols) {
             for (int i = 0; i != cols.Length; i++) {
                 for (int j = 0; j != newValues.GetLength(0); j++) {
                     if (cols[i].Name == newValues[j, 0]) {
@@ -1371,7 +1371,7 @@ namespace DataBaseSQL {
                 }
             }
         }
-        static public int Remove(string table, RequestWhere where = null) {
+        public static int Remove(string table, RequestWhere where = null) {
             Column[] cols = DataBase.getColumns(table);
 
             if (cols != null) {
@@ -1465,7 +1465,7 @@ namespace DataBaseSQL {
                 return -1;
             }
         }
-        static public Column[] GetColumns(string table) {
+        public static Column[] GetColumns(string table) {
             Column[] data = DataBase.getColumns(table);
             DataBase.sr.Close();
 
