@@ -868,6 +868,11 @@ namespace DataBaseSQL {
         static private string version = "0.2";
         static private string db = null;
 
+        static public string DataBaseName {
+            get {
+                return db;
+            }
+        }
         static public bool Use(string name) {
             if (Directory.Exists("DataBase\\" + name)) {
                 db = name;
