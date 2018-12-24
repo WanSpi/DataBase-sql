@@ -1368,7 +1368,11 @@ namespace DataBaseSQL {
             for (int i = 0; i != cols.Length; i++) {
                 bits += DataBase.getBits(cols[i]);
             }
-            bits += 8 - bits % 8;
+
+            if (bits % 8 != 0) {
+                bits += 8 - bits % 8;
+            }
+
             List<string> l = breakRows(dataLine, bits / 8);
 
             for (int i = 0; i != l.Count; i++) {
